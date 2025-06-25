@@ -19,8 +19,8 @@ export function MetricCard({ icon, title, value, change, changeType }: MetricCar
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
         <p className={cn(
-          "text-xs text-muted-foreground",
-          changeType === 'increase' ? 'text-green-600' : 'text-red-600'
+          "text-xs",
+          changeType === 'increase' ? 'text-primary' : 'text-destructive'
         )}>
           {change} from last hour
         </p>
