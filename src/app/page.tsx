@@ -89,7 +89,7 @@ export default function Home() {
                 </div>
               </div>
               <Image
-                src="https://placehold.co/700x500.png"
+                src="https://images.unsplash.com/photo-1616786947253-108244838b99?w=700&h=500&fit=crop&q=80"
                 width="700"
                 height="500"
                 alt="Hero"
@@ -147,7 +147,7 @@ export default function Home() {
                         </div>
                     </div>
                     <Image
-                        src="https://placehold.co/600x550.png"
+                        src="https://images.unsplash.com/photo-1587322849294-883906a14357?w=600&h=550&fit=crop&q=80"
                         width="600"
                         height="550"
                         alt="Benefits"
@@ -171,7 +171,7 @@ export default function Home() {
                 <Card className="overflow-hidden">
                   <CardContent className="p-0">
                     <Image
-                      src="https://placehold.co/1024x640.png"
+                      src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1024&h=640&fit=crop&q=80"
                       width="1024"
                       height="640"
                       alt="Dashboard Preview"

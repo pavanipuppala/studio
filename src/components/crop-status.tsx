@@ -8,21 +8,21 @@ const crops = [
     name: "Leafy Greens",
     health: 92,
     stage: "Mid Growth",
-    image: "https://placehold.co/300x200.png",
+    image: "https://images.unsplash.com/photo-1550432133-d852382a4a35?w=300&h=200&fit=crop&q=80",
     hint: "green lettuce"
   },
   {
     name: "Strawberries",
     health: 78,
     stage: "Flowering",
-    image: "https://placehold.co/300x200.png",
+    image: "https://images.unsplash.com/photo-1587393855524-h2c9465a3178?w=300&h=200&fit=crop&q=80",
     hint: "ripe strawberries"
   },
   {
     name: "Herbs",
     health: 85,
     stage: "Harvest Ready",
-    image: "https://placehold.co/300x200.png",
+    image: "https://images.unsplash.com/photo-1599912026574-3c13a5d85834?w=300&h=200&fit=crop&q=80",
     hint: "fresh herbs"
   },
 ];
