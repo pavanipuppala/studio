@@ -93,7 +93,7 @@ export default function Home() {
                 width="700"
                 height="500"
                 alt="Hero"
-                data-ai-hint="vertical farming"
+                data-ai-hint="modern hydroponics"
                 className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
               />
             </div>
@@ -151,7 +151,7 @@ export default function Home() {
                         width="600"
                         height="550"
                         alt="Benefits"
-                        data-ai-hint="futuristic agriculture"
+                        data-ai-hint="glowing plants"
                         className="mx-auto aspect-[1/1] overflow-hidden rounded-xl object-cover"
                     />
                 </div>
@@ -175,7 +175,7 @@ export default function Home() {
                       width="1024"
                       height="640"
                       alt="Dashboard Preview"
-                      data-ai-hint="dashboard data"
+                      data-ai-hint="data visualization"
                       className="w-full"
                     />
                   </CardContent>

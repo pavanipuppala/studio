@@ -9,21 +9,21 @@ const crops = [
     health: 92,
     stage: "Mid Growth",
     image: "https://placehold.co/300x200.png",
-    hint: "lettuce farm"
+    hint: "green lettuce"
   },
   {
     name: "Strawberries",
     health: 78,
     stage: "Flowering",
     image: "https://placehold.co/300x200.png",
-    hint: "strawberry plant"
+    hint: "ripe strawberries"
   },
   {
     name: "Herbs",
     health: 85,
     stage: "Harvest Ready",
     image: "https://placehold.co/300x200.png",
-    hint: "herb garden"
+    hint: "fresh herbs"
   },
 ];
 
