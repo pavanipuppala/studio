@@ -73,7 +73,7 @@ export default function Home() {
               <div className="flex flex-col justify-center items-center space-y-4">
                 <div className="space-y-4">
                   <h1 className="text-4xl font-bold tracking-tighter font-headline sm:text-5xl xl:text-6xl/none text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-                    The Dawn of Digital Agriculture
+                    Smart Farming for Urban Future
                   </h1>
                   <p className="max-w-2xl mx-auto text-gray-400 md:text-xl">
                     Pioneering the future of urban farming with our AI-driven, IoT-integrated vertical farming platform.
