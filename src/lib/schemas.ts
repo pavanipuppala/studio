@@ -17,9 +17,10 @@ export const RegisterSchema = z.object({
 
 export const AddressSchema = z.object({
     addressLine1: z.string().min(1, { message: "Address is required." }),
-    city: z.string().min(1, { message: "City is required." }),
-    state: z.string().min(1, { message: "State is required." }),
+    city: z.string().min(1, { message: "Please select a city." }),
+    state: z.string().min(1, { message: "Please select a state." }),
     pincode: z.string().length(6, { message: "Pincode must be 6 digits." }),
+    experience: z.string().min(1, { message: "Please select your experience level." }),
 });
 
 export const AiOptimizerSchema = z.object({

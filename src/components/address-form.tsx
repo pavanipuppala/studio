@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddressSchema } from "@/lib/schemas";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 export function AddressForm() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export function AddressForm() {
       city: "",
       state: "Andhra Pradesh",
       pincode: "",
+      experience: "",
     },
   });
 
@@ -49,7 +51,7 @@ export function AddressForm() {
       <CardHeader>
         <CardTitle className="text-2xl font-headline">Farm Location</CardTitle>
         <CardDescription>
-          Please provide your farm's address to get location-specific guidance.
+          Please provide your farm's address and experience to get location-specific guidance.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -74,11 +76,22 @@ export function AddressForm() {
                 name="city"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>City / Town</FormLabel>
-                    <FormControl>
-                        <Input placeholder="e.g. Visakhapatnam" {...field} />
-                    </FormControl>
-                    <FormMessage />
+                        <FormLabel>City / Town</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a city" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="Visakhapatnam">Visakhapatnam</SelectItem>
+                                <SelectItem value="Vijayawada">Vijayawada</SelectItem>
+                                <SelectItem value="Guntur">Guntur</SelectItem>
+                                <SelectItem value="Tirupati">Tirupati</SelectItem>
+                                <SelectItem value="Kurnool">Kurnool</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
                     </FormItem>
                 )}
                 />
@@ -102,9 +115,38 @@ export function AddressForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>State</FormLabel>
-                  <FormControl>
-                    <Input {...field} disabled />
-                  </FormControl>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a state" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
+                        </SelectContent>
+                    </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="experience"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Farming Experience</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select your experience level" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="beginner">Beginner (0-2 years experience)</SelectItem>
+                            <SelectItem value="moderator">Moderator (3-5 years experience)</SelectItem>
+                            <SelectItem value="experienced">Experienced (5+ years experience)</SelectItem>
+                        </SelectContent>
+                    </Select>
                   <FormMessage />
                 </FormItem>
               )}
