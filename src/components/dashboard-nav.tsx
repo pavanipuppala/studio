@@ -1,13 +1,15 @@
+
 "use client";
 
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-    SidebarHeader,
     SidebarContent,
-    SidebarMenu,
     SidebarMenuItem,
-    SidebarMenuButton,
-    SidebarFooter
+    SidebarMenu,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Button } from './ui/button';
 import { Leaf, LayoutDashboard, AlertTriangle, Settings, User, LogOut } from 'lucide-react';
@@ -32,43 +34,42 @@ export function DashboardNav() {
 
     return (
         <>
-            <SidebarHeader className='p-4'>
-                <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="text-sidebar-foreground">
-                        <Leaf className="h-6 w-6" />
-                    </Button>
-                    <div className="flex flex-col">
-                        <span className="text-lg font-semibold font-headline text-sidebar-foreground">AP Agri-Tech</span>
-                        <span className="text-xs text-sidebar-foreground/70">Urban Farming Portal</span>
-                    </div>
+            <SidebarHeader className='p-4 border-b border-sidebar-border'>
+                <div className="flex items-center justify-between">
+                    <Link href="/" className="flex items-center gap-2" prefetch={false}>
+                        <Leaf className="h-6 w-6 text-emerald-400" />
+                        <span className="text-lg font-semibold font-headline text-sidebar-foreground group-data-[state=collapsed]:hidden">Urban Vertical Farming</span>
+                    </Link>
+                    <SidebarTrigger className="hidden md:flex text-sidebar-foreground/70 group-data-[state=collapsed]:hidden" />
                 </div>
             </SidebarHeader>
             <SidebarContent className='p-4'>
                 <SidebarMenu>
                     {menuItems.map((item) => (
                         <SidebarMenuItem key={item.href}>
-                            <SidebarMenuButton
+                            <Button
+                                variant={pathname === item.href ? "secondary" : "ghost"}
+                                className="w-full justify-start gap-2"
                                 onClick={() => router.push(item.href)}
-                                isActive={pathname === item.href}
                             >
-                                <item.icon className="size-4" />
-                                <span>{item.label}</span>
-                            </SidebarMenuButton>
+                                <item.icon className="size-5 text-gray-400" />
+                                <span className="group-data-[state=collapsed]:hidden">{item.label}</span>
+                            </Button>
                         </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
             </SidebarContent>
-            <SidebarFooter className='p-4'>
-                 <div className="flex items-center gap-3">
+            <SidebarFooter className='p-4 mt-auto border-t border-sidebar-border'>
+                 <div className="flex items-center gap-3 group-data-[state=collapsed]:justify-center">
                     <Avatar>
-                        <AvatarImage src="https://placehold.co/40x40.png" alt="@farmer" />
-                        <AvatarFallback>AP</AvatarFallback>
+                        <AvatarImage src="https://placehold.co/40x40.png" alt="@farmer" data-ai-hint="portrait person" />
+                        <AvatarFallback>UV</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-sm text-sidebar-foreground">Andhra Farmer</span>
-                        <span className="text-xs text-sidebar-foreground/70">farmer@ap.gov.in</span>
+                    <div className="flex flex-col group-data-[state=collapsed]:hidden">
+                        <span className="font-semibold text-sm text-sidebar-foreground">Urban Farmer</span>
+                        <span className="text-xs text-sidebar-foreground/70">farmer@uvf.com</span>
                     </div>
-                    <Button variant="ghost" size="icon" className="ml-auto text-sidebar-foreground" onClick={handleLogout}>
+                    <Button variant="ghost" size="icon" className="ml-auto text-sidebar-foreground group-data-[state=collapsed]:hidden" onClick={handleLogout}>
                         <LogOut className="size-4" />
                     </Button>
                 </div>

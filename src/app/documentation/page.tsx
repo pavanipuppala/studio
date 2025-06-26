@@ -4,20 +4,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function DocumentationPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gray-950 text-gray-50">
       <PageHeader />
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4">
-          <Card>
+          <Card className="bg-gray-900/80 border-gray-700 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-3xl font-headline">Documentation</CardTitle>
-              <CardDescription>A guide to using the AP Agri-Tech Portal prototype.</CardDescription>
+              <CardTitle className="text-3xl font-headline text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">Documentation</CardTitle>
+              <CardDescription className="text-gray-400">A guide to using the Urban Vertical Farming prototype.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6 prose max-w-none dark:prose-invert">
+            <CardContent className="space-y-6 prose max-w-none dark:prose-invert prose-p:text-gray-300 prose-headings:text-gray-100 prose-a:text-emerald-400">
               <section>
                 <h2 className="font-headline text-2xl">Introduction</h2>
                 <p>
-                  Welcome to the Andhra Pradesh Agri-Tech Portal. This prototype demonstrates the power of integrating IoT and AI into urban vertical farming. This document will guide you through the features and functionalities of the application.
+                  Welcome to the Urban Vertical Farming Portal. This prototype demonstrates the power of integrating IoT and AI into urban vertical farming. This document will guide you through the features and functionalities of the application.
                 </p>
               </section>
 

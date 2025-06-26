@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Andhra Pradesh Agri-Tech Portal',
-  description: 'Urban Vertical Farming with IoT for Andhra Pradesh',
+  title: 'Urban Vertical Farming',
+  description: 'The future of agriculture is here. Smart, sustainable, and scalable vertical farming solutions.',
 };
 
 export default function RootLayout({
