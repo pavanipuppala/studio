@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,11 +20,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RegisterSchema } from "@/lib/schemas";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export function RegisterForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -37,17 +39,44 @@ export function RegisterForm() {
 
   function onSubmit(values: z.infer<typeof RegisterSchema>) {
     setIsSubmitting(true);
-    // Mock API call
+
+    // Simulate database interaction with localStorage
     setTimeout(() => {
+      const registeredUsers = JSON.parse(localStorage.getItem("registeredUsers") || "[]");
+      const userExists = registeredUsers.some((user: any) => user.email === values.email);
+
+      if (userExists) {
+        toast({
+          title: "Registration Failed",
+          description: "An account with this email already exists.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+      
+      const newUser = {
+        name: values.name,
+        email: values.email,
+        password: values.password, // Storing password in plaintext for prototype purposes ONLY
+      };
+      
+      registeredUsers.push(newUser);
+      localStorage.setItem("registeredUsers", JSON.stringify(registeredUsers));
+
+      // Also set the current user profile for immediate login
       const userProfile = {
         name: values.name,
         email: values.email,
         farmName: `${values.name}'s Farm`,
-        avatar: "https://placehold.co/128x128.png",
       };
       localStorage.setItem("userProfile", JSON.stringify(userProfile));
-
-      console.log(values);
+      
+      toast({
+        title: "Registration Successful",
+        description: "Your account has been created.",
+      });
+      
       router.push("/address");
     }, 1000);
   }
