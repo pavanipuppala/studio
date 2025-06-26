@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const alerts = [
   { id: 1, severity: "High", component: "Greenhouse 1", message: "Temperature exceeded 30°C. Cooling system activated.", timestamp: "2024-07-29 10:05 AM", status: "Resolved" },
@@ -30,36 +31,40 @@ export default function AlertsPage() {
           A log of all system alerts and notifications.
         </p>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Severity</TableHead>
-            <TableHead>Component</TableHead>
-            <TableHead>Message</TableHead>
-            <TableHead>Timestamp</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {alerts.map((alert) => (
-            <TableRow key={alert.id}>
-              <TableCell>
-                <Badge variant={alert.severity === 'High' ? 'destructive' : alert.severity === 'Medium' ? 'secondary' : 'outline'}>
-                  {alert.severity}
-                </Badge>
-              </TableCell>
-              <TableCell className="font-medium">{alert.component}</TableCell>
-              <TableCell>{alert.message}</TableCell>
-              <TableCell>{alert.timestamp}</TableCell>
-              <TableCell>
-                 <Badge variant={alert.status === 'Active' ? 'default' : 'outline'} className={alert.status === 'Active' ? 'bg-amber-500' : ''}>
-                    {alert.status}
-                </Badge>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <Card>
+        <CardContent className="p-0">
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Severity</TableHead>
+                    <TableHead>Component</TableHead>
+                    <TableHead>Message</TableHead>
+                    <TableHead>Timestamp</TableHead>
+                    <TableHead>Status</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {alerts.map((alert) => (
+                    <TableRow key={alert.id} className="even:bg-card/50">
+                    <TableCell>
+                        <Badge variant={alert.severity === 'High' ? 'destructive' : alert.severity === 'Medium' ? 'secondary' : 'outline'}>
+                        {alert.severity}
+                        </Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">{alert.component}</TableCell>
+                    <TableCell>{alert.message}</TableCell>
+                    <TableCell>{alert.timestamp}</TableCell>
+                    <TableCell>
+                        <Badge variant={alert.status === 'Active' ? 'default' : 'outline'} className={alert.status === 'Active' ? 'bg-amber-500' : ''}>
+                            {alert.status}
+                        </Badge>
+                    </TableCell>
+                    </TableRow>
+                ))}
+                </TableBody>
+            </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -128,7 +128,7 @@ export function AiOptimizer() {
                 )}
               />
             </div>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="bg-primary/90 hover:bg-primary">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -149,33 +149,33 @@ export function AiOptimizer() {
             </Alert>
           )}
           {result && (
-            <Alert>
-                <Bot className="h-4 w-4" />
-                <AlertTitle className="font-headline flex items-center justify-between">
+            <Alert className="border-primary/50 bg-primary/10">
+                <Bot className="h-4 w-4 text-primary" />
+                <AlertTitle className="font-headline flex items-center justify-between text-primary">
                     <span>AI Recommendation</span>
                 </AlertTitle>
                 <AlertDescription>
-                   <p className="font-semibold mt-4 mb-2">Summary:</p>
-                   <p className="mb-4">{result.summary}</p>
+                   <p className="font-semibold mt-4 mb-2 text-foreground">Summary:</p>
+                   <p className="mb-4 text-muted-foreground">{result.summary}</p>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                       <Card className="p-4">
+                       <Card className="p-4 bg-card/80">
                            <p className="text-sm font-medium text-muted-foreground">Temperature</p>
-                           <p className="font-semibold">{result.temperatureAdjustment}</p>
+                           <p className="font-semibold text-foreground">{result.temperatureAdjustment}</p>
                        </Card>
-                       <Card className="p-4">
+                       <Card className="p-4 bg-card/80">
                            <p className="text-sm font-medium text-muted-foreground">Humidity</p>
-                           <p className="font-semibold">{result.humidityAdjustment}</p>
+                           <p className="font-semibold text-foreground">{result.humidityAdjustment}</p>
                        </Card>
-                       <Card className="p-4">
+                       <Card className="p-4 bg-card/80">
                            <p className="text-sm font-medium text-muted-foreground">Light Level</p>
-                           <p className="font-semibold">{result.lightLevelAdjustment}</p>
+                           <p className="font-semibold text-foreground">{result.lightLevelAdjustment}</p>
                        </Card>
                    </div>
                    <div className="flex gap-2 justify-end">
                        <Button variant="outline" size="sm" onClick={() => handleRecommendationAction('Rejected')}>
                            <X className="mr-2 h-4 w-4" /> Reject
                        </Button>
-                       <Button size="sm" onClick={() => handleRecommendationAction('Accepted')} className="bg-green-600 hover:bg-green-700">
+                       <Button size="sm" onClick={() => handleRecommendationAction('Accepted')} className="bg-green-600 hover:bg-green-700 text-white">
                            <Check className="mr-2 h-4 w-4" /> Accept
                        </Button>
                    </div>

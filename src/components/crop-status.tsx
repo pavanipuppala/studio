@@ -8,21 +8,21 @@ const crops = [
     name: "Leafy Greens",
     health: 92,
     stage: "Mid Growth",
-    image: "https://images.unsplash.com/photo-1550432133-d852382a4a35?w=300&h=200&fit=crop&q=80",
+    image: "https://images.unsplash.com/photo-1631195463533-5b85891630b3?q=80&w=400&h=300&auto=format&fit=crop",
     hint: "green lettuce"
   },
   {
     name: "Strawberries",
     health: 78,
     stage: "Flowering",
-    image: "https://images.unsplash.com/photo-1587393855524-h2c9465a3178?w=300&h=200&fit=crop&q=80",
+    image: "https://images.unsplash.com/photo-1599454101498-3dc6f82cc847?q=80&w=400&h=300&auto=format&fit=crop",
     hint: "ripe strawberries"
   },
   {
     name: "Herbs",
     health: 85,
     stage: "Harvest Ready",
-    image: "https://images.unsplash.com/photo-1599912026574-3c13a5d85834?w=300&h=200&fit=crop&q=80",
+    image: "https://images.unsplash.com/photo-1604803799222-7f51159b3d22?q=80&w=400&h=300&auto=format&fit=crop",
     hint: "fresh herbs"
   },
 ];
@@ -47,7 +47,7 @@ export function CropStatus() {
                 width={80}
                 height={60}
                 data-ai-hint={crop.hint}
-                className="rounded-md object-cover"
+                className="rounded-md object-cover aspect-[4/3]"
               />
               <div className="w-full">
                 <div className="flex justify-between items-center mb-1">

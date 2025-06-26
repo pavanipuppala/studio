@@ -1,6 +1,6 @@
 "use client"
 
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
 
 import {
   Card,
@@ -30,15 +30,15 @@ const chartData = [
 
 const chartConfig = {
   temperature: {
-    label: "Temperature",
+    label: "Temperature (°C)",
     color: "hsl(var(--chart-1))",
   },
   humidity: {
-    label: "Humidity",
+    label: "Humidity (%)",
     color: "hsl(var(--chart-3))",
   },
   light: {
-    label: "Light",
+    label: "Light (klx)",
     color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
@@ -51,35 +51,44 @@ export function DataChart() {
         <CardDescription>Key environmental metrics for the last 7 days</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-64 w-full">
-            <LineChart accessibilityLayer data={chartData}>
-                <CartesianGrid vertical={false} />
-                 <XAxis
+        <ChartContainer config={chartConfig} className="h-72 w-full">
+            <AreaChart accessibilityLayer data={chartData} margin={{ left: 12, right: 12 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
                     dataKey="day"
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
                     tickFormatter={(value) => value.slice(0, 3)}
                 />
-                <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--chart-1))" />
-                <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" />
+                 <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={10}
+                 />
                 <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent 
-                        formatter={(value, name) => {
-                            if (name === "temperature") return `${value}°C`
-                            if (name === "humidity") return `${value}%`
-                            if (name === "light") return `${value} klx`
-                            return value
-                        }}
-                        indicator="dot" 
-                    />}
+                    cursor={true}
+                    content={<ChartTooltipContent indicator="dot" />}
                 />
-                <Legend content={<ChartLegendContent />} />
-                <Line yAxisId="left" dataKey="temperature" type="monotone" stroke="var(--color-temperature)" strokeWidth={2} dot={false} />
-                <Line yAxisId="left" dataKey="humidity" type="monotone" stroke="var(--color-humidity)" strokeWidth={2} dot={false} />
-                <Line yAxisId="right" dataKey="light" type="monotone" stroke="var(--color-light)" strokeWidth={2} dot={false} />
-            </LineChart>
+                <ChartLegend content={<ChartLegendContent />} />
+                <defs>
+                    <linearGradient id="fillTemperature" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-temperature)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="var(--color-temperature)" stopOpacity={0.1} />
+                    </linearGradient>
+                    <linearGradient id="fillHumidity" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-humidity)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="var(--color-humidity)" stopOpacity={0.1} />
+                    </linearGradient>
+                     <linearGradient id="fillLight" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--color-light)" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="var(--color-light)" stopOpacity={0.1} />
+                    </linearGradient>
+                </defs>
+                <Area dataKey="temperature" type="natural" fill="url(#fillTemperature)" fillOpacity={0.4} stroke="var(--color-temperature)" strokeWidth={2} stackId="a" />
+                <Area dataKey="humidity" type="natural" fill="url(#fillHumidity)" fillOpacity={0.4} stroke="var(--color-humidity)" strokeWidth={2} stackId="b" />
+                <Area dataKey="light" type="natural" fill="url(#fillLight)" fillOpacity={0.4} stroke="var(--color-light)" strokeWidth={2} stackId="c" />
+            </AreaChart>
         </ChartContainer>
       </CardContent>
     </Card>
