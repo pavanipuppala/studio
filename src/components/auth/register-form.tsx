@@ -28,6 +28,7 @@ export function RegisterForm() {
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -38,6 +39,14 @@ export function RegisterForm() {
     setIsSubmitting(true);
     // Mock API call
     setTimeout(() => {
+      const userProfile = {
+        name: values.name,
+        email: values.email,
+        farmName: `${values.name}'s Farm`,
+        avatar: "https://placehold.co/128x128.png",
+      };
+      localStorage.setItem("userProfile", JSON.stringify(userProfile));
+
       console.log(values);
       router.push("/address");
     }, 1000);
@@ -54,6 +63,19 @@ export function RegisterForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="email"

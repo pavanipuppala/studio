@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import {
     SidebarContent,
     SidebarMenuItem,
@@ -19,6 +20,29 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 export function DashboardNav() {
     const pathname = usePathname();
     const router = useRouter();
+    const [userName, setUserName] = useState("User");
+    const [userEmail, setUserEmail] = useState("user@example.com");
+    const [avatarSrc, setAvatarSrc] = useState("https://placehold.co/40x40.png");
+
+    useEffect(() => {
+        const storedProfile = localStorage.getItem('userProfile');
+        if (storedProfile) {
+            const profile = JSON.parse(storedProfile);
+            setUserName(profile.name || "Urban Farmer");
+            setUserEmail(profile.email || "farmer@uvf.com");
+            setAvatarSrc(profile.avatar || "https://placehold.co/40x40.png");
+        }
+    }, [pathname]); // Rerun when path changes to reflect updates
+
+    const getInitials = (name: string) => {
+      if (!name) return "UF";
+      const parts = name.split(' ');
+      if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      }
+      if(name) return (name.substring(0, 2)).toUpperCase();
+      return "UF";
+    };
 
     const menuItems = [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -62,12 +86,12 @@ export function DashboardNav() {
             <SidebarFooter className='p-4 mt-auto border-t border-sidebar-border'>
                  <div className="flex items-center gap-3 group-data-[state=collapsed]:justify-center">
                     <Avatar>
-                        <AvatarImage src="https://placehold.co/40x40.png" alt="@farmer" data-ai-hint="portrait person" />
-                        <AvatarFallback>UV</AvatarFallback>
+                        <AvatarImage src={avatarSrc} alt="@farmer" />
+                        <AvatarFallback>{getInitials(userName)}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col group-data-[state=collapsed]:hidden">
-                        <span className="font-semibold text-sm text-sidebar-foreground">Urban Farmer</span>
-                        <span className="text-xs text-sidebar-foreground/70">farmer@uvf.com</span>
+                        <span className="font-semibold text-sm text-sidebar-foreground">{userName}</span>
+                        <span className="text-xs text-sidebar-foreground/70">{userEmail}</span>
                     </div>
                     <Button variant="ghost" size="icon" className="ml-auto text-sidebar-foreground group-data-[state=collapsed]:hidden" onClick={handleLogout}>
                         <LogOut className="size-4" />
