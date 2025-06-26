@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Upload } from 'lucide-react';
+import { User } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,19 +70,15 @@ export default function ProfilePage() {
       <Card>
         <CardHeader>
           <CardTitle>Personal Information</CardTitle>
-          <CardDescription>Update your account details and profile picture.</CardDescription>
+          <CardDescription>Update your account details.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center space-y-4">
+            <div className="flex flex-col items-center space-y-4 pt-6">
               <Avatar className="h-32 w-32">
                 <AvatarImage src={avatar} alt="User Avatar" />
                 <AvatarFallback>{getInitials(name)}</AvatarFallback>
               </Avatar>
-              <Button variant="outline">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Picture
-              </Button>
             </div>
             <div className="md:col-span-2 space-y-6">
               <div className="space-y-2">
