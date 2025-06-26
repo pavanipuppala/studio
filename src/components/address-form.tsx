@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AddressSchema } from "@/lib/schemas";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { indianStates } from "@/lib/indian-states";
 
 export function AddressForm() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export function AddressForm() {
     defaultValues: {
       addressLine1: "",
       city: "",
-      state: "Andhra Pradesh",
+      state: "",
       pincode: "",
       experience: "",
     },
@@ -77,20 +78,9 @@ export function AddressForm() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>City / Town</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a city" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="Visakhapatnam">Visakhapatnam</SelectItem>
-                                <SelectItem value="Vijayawada">Vijayawada</SelectItem>
-                                <SelectItem value="Guntur">Guntur</SelectItem>
-                                <SelectItem value="Tirupati">Tirupati</SelectItem>
-                                <SelectItem value="Kurnool">Kurnool</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <FormControl>
+                            <Input placeholder="e.g. Mumbai" {...field} />
+                        </FormControl>
                         <FormMessage />
                     </FormItem>
                 )}
@@ -102,7 +92,7 @@ export function AddressForm() {
                     <FormItem>
                     <FormLabel>Pincode</FormLabel>
                     <FormControl>
-                        <Input placeholder="e.g. 530001" {...field} />
+                        <Input placeholder="e.g. 400001" {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -114,7 +104,7 @@ export function AddressForm() {
               name="state"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>State</FormLabel>
+                  <FormLabel>State / Union Territory</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                             <SelectTrigger>
@@ -122,7 +112,9 @@ export function AddressForm() {
                             </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                            <SelectItem value="Andhra Pradesh">Andhra Pradesh</SelectItem>
+                            {indianStates.map(state => (
+                                <SelectItem key={state} value={state}>{state}</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                   <FormMessage />

@@ -64,7 +64,7 @@ export function DashboardNav() {
                         <Leaf className="h-6 w-6 text-emerald-400" />
                         <span className="text-lg font-semibold font-headline text-sidebar-foreground group-data-[state=collapsed]:hidden">Urban Vertical Farming</span>
                     </Link>
-                    <SidebarTrigger className="hidden md:flex text-sidebar-foreground/70 group-data-[state=collapsed]:hidden" />
+                    <SidebarTrigger className="hidden md:flex text-sidebar-foreground/70" />
                 </div>
             </SidebarHeader>
             <SidebarContent className='p-4'>
@@ -86,7 +86,7 @@ export function DashboardNav() {
             <SidebarFooter className='p-4 mt-auto border-t border-sidebar-border'>
                  <div className="flex items-center gap-3 group-data-[state=collapsed]:justify-center">
                     <Avatar>
-                        <AvatarImage src={avatarSrc} alt="@farmer" />
+                        <AvatarImage src={avatarSrc} alt="@farmer" data-ai-hint="male avatar"/>
                         <AvatarFallback>{getInitials(userName)}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col group-data-[state=collapsed]:hidden">

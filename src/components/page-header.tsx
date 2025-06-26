@@ -19,6 +19,9 @@ export function PageHeader() {
         <Link href="/contact" className="text-sm font-medium text-gray-400 hover:text-gray-50 transition-colors" prefetch={false}>
           Contact
         </Link>
+        <Link href="/feedback" className="text-sm font-medium text-gray-400 hover:text-gray-50 transition-colors" prefetch={false}>
+          Feedback
+        </Link>
         <Button asChild className="bg-emerald-500 hover:bg-emerald-600 text-white">
           <Link href="/login">Login</Link>
         </Button>

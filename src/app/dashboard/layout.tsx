@@ -4,7 +4,7 @@ import { DashboardNav } from "@/components/dashboard-nav";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     return (
         <SidebarProvider>
-            <div className="relative min-h-screen">
+            <div className="relative min-h-screen bg-background">
                 <Sidebar>
                     <DashboardNav />
                 </Sidebar>
