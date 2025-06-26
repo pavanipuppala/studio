@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,19 +22,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { LoginSchema } from "@/lib/schemas";
 import { useToast } from "@/hooks/use-toast";
 import { RegisterPromptDialog } from "./register-prompt-dialog";
-import { Skeleton } from "../ui/skeleton";
 
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -77,35 +70,6 @@ export function LoginForm() {
 
       router.push("/address");
     }, 1000);
-  }
-
-  if (!isClient) {
-    return (
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl font-headline">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-            <Skeleton className="h-10 w-full" />
-          </div>
-          <div className="mt-4 text-center text-sm">
-            <Skeleton className="h-4 w-48 mx-auto" />
-          </div>
-        </CardContent>
-      </Card>
-    );
   }
 
   return (
