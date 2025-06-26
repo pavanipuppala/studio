@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings as SettingsIcon, Bell, Palette, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from "next-themes";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ const itemVariants = {
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const [theme, setTheme] = useState("dark");
+  const { theme, setTheme } = useTheme();
 
   const handleSave = () => {
     toast({
