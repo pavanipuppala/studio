@@ -6,7 +6,7 @@ import { format, subDays } from "date-fns";
 import { MetricCard } from "@/components/metric-card";
 import { DataChart } from "@/components/data-chart";
 import { AiOptimizer } from "@/components/ai-optimizer";
-import { CropStatus } from "@/components/crop-status";
+import { IdealConditions } from "@/components/crop-status";
 import { Thermometer, Droplets, Sun, Info } from "lucide-react";
 import { AlertsPreview } from "@/components/alerts-preview";
 import { CropRecommender } from "@/components/crop-recommender";
@@ -38,14 +38,12 @@ type MetricData = {
 };
 
 type ChartData = { day: string; temperature: number; humidity: number; light: number };
-type CropData = { name: string; health: number; stage: string };
 type AlertData = { icon: JSX.Element; title: string; description: string; time: string; severity: "High" | "Medium" | "Low" };
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<{ temp: MetricData | null; humidity: MetricData | null; light: MetricData | null }>({ temp: null, humidity: null, light: null });
   const [chartData, setChartData] = useState<ChartData[]>([]);
-  const [cropData, setCropData] = useState<CropData[]>([]);
   const [alertData, setAlertData] = useState<AlertData[]>([]);
   const [baseMetrics, setBaseMetrics] = useState<{temp: number, humidity: number} | null>(null);
   const [climateInfo, setClimateInfo] = useState<{ description: string } | null>(null);
@@ -115,13 +113,6 @@ export default function DashboardPage() {
           light: 12 + Math.random() * 1.5,
         };
       }));
-
-      // Crop Data
-      setCropData([
-        { name: "Leafy Greens", health: Math.floor(85 + Math.random() * 10), stage: "Mid Growth" },
-        { name: "Strawberries", health: Math.floor(75 + Math.random() * 10), stage: "Flowering" },
-        { name: "Herbs", health: Math.floor(80 + Math.random() * 10), stage: "Harvest Ready" },
-      ]);
       
       // Alert Data
       setAlertData([
@@ -204,7 +195,7 @@ export default function DashboardPage() {
         </motion.div>
         <motion.div variants={itemVariants} className="lg:col-span-1 space-y-8">
             <CropRecommender />
-            <CropStatus crops={cropData} />
+            <IdealConditions />
             <AlertsPreview alerts={alertData} />
         </motion.div>
       </motion.div>
