@@ -8,7 +8,7 @@ import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
 
 interface CropRecommenderProps {
   recommendation: RecommendCropOutput | null;
-  farmInfo: { city: string; state: string; farmType: string } | null;
+  farmInfo: { city: string; state: string; } | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -23,7 +23,7 @@ export function CropRecommender({ recommendation, farmInfo, isLoading, error }: 
         </CardTitle>
         {farmInfo && (
           <CardDescription className="flex items-center gap-1 pt-1">
-            <MapPin className="h-3 w-3" /> For your {farmInfo.farmType.toLowerCase()} farm in {farmInfo.city}, {farmInfo.state}
+            <MapPin className="h-3 w-3" /> For your location in {farmInfo.city}, {farmInfo.state}
           </CardDescription>
         )}
       </CardHeader>
@@ -47,11 +47,9 @@ export function CropRecommender({ recommendation, farmInfo, isLoading, error }: 
               <h3 className="text-2xl font-bold text-primary">{recommendation.cropName}</h3>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Suggested Farming Method</p>
+              <p className="text-sm text-muted-foreground mb-1">Predicted Farm Type</p>
               <div className="flex gap-2">
-                {recommendation.farmingMethods.map(method => (
-                  <Badge key={method} variant="secondary">{method}</Badge>
-                ))}
+                <Badge variant="secondary">{recommendation.predictedFarmType}</Badge>
               </div>
             </div>
             <div>

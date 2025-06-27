@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview An AI agent that recommends crops based on location.
+ * @fileOverview An AI agent that recommends crops and a suitable vertical farming method based on location.
  *
  * - recommendCrop - A function that handles the crop recommendation process.
  * - RecommendCropInput - The input type for the recommendCrop function.
@@ -14,14 +14,13 @@ import {z} from 'genkit';
 const RecommendCropInputSchema = z.object({
   city: z.string().describe('The city where the farm is located.'),
   state: z.string().describe('The state where the farm is located.'),
-  farmType: z.string().describe('The type of vertical farm (e.g., Hydroponic, Aeroponic).'),
 });
 export type RecommendCropInput = z.infer<typeof RecommendCropInputSchema>;
 
 const RecommendCropOutputSchema = z.object({
   cropName: z.string().describe('The name of the recommended crop.'),
   reason: z.string().describe('A detailed explanation for the recommendation.'),
-  farmingMethods: z.array(z.string()).describe('Suggested farming methods (e.g., Hydroponics, Aeroponics).'),
+  predictedFarmType: z.string().describe('The most suitable vertical farming method (e.g., "Hydroponics", "Aeroponics") for the location.'),
 });
 export type RecommendCropOutput = z.infer<typeof RecommendCropOutputSchema>;
 
@@ -37,14 +36,14 @@ const prompt = ai.definePrompt({
   output: {schema: RecommendCropOutputSchema},
   prompt: `You are an agricultural expert specializing in vertical farming in India.
 
-Based on the location and specific farm type provided, recommend a single, highly suitable crop to grow.
+Based on the location provided, recommend a single, highly suitable crop to grow and the most appropriate vertical farming method (e.g., Hydroponics, Aeroponics, Aquaponics).
 
-Your recommendation should consider the general climate of the region, local market demand, and high compatibility with the specified vertical farming technique. For the 'farmingMethods' output field, return an array containing only the provided farm type.
+Your recommendation should consider the general climate of the region, local market demand, and resource availability (like water and electricity) that might favor one farming technique over another.
 
 Location: {{{city}}}, {{{state}}}, India
-Farm Type: {{{farmType}}}
 
-Provide a clear, concise reason for your recommendation.`,
+Provide a clear, concise reason for your crop recommendation.
+The output 'predictedFarmType' field should contain the name of the single recommended farming method.`,
 });
 
 const recommendCropFlow = ai.defineFlow(

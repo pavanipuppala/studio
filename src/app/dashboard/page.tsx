@@ -46,7 +46,7 @@ export default function DashboardPage() {
   const [alertData, setAlertData] = useState<AlertData[]>([]);
   const [baseMetrics, setBaseMetrics] = useState<{temp: number, humidity: number} | null>(null);
   const [climateInfo, setClimateInfo] = useState<{ description: string } | null>(null);
-  const [farmInfo, setFarmInfo] = useState<{ city: string; state: string; farmType: string } | null>(null);
+  const [farmInfo, setFarmInfo] = useState<{ city: string; state: string; } | null>(null);
   const [recommendedCrop, setRecommendedCrop] = useState<RecommendCropOutput | null>(null);
   const [isRecommenderLoading, setIsRecommenderLoading] = useState(true);
   const [recommenderError, setRecommenderError] = useState<string | null>(null);
@@ -55,18 +55,16 @@ export default function DashboardPage() {
     const initializeDashboard = async () => {
       let city = "Bengaluru";
       let state = "Karnataka";
-      let farmType = "Hydroponic";
 
       const storedAddress = localStorage.getItem('farm_address');
       if (storedAddress) {
         const address = JSON.parse(storedAddress);
-        if (address.city && address.state && address.farmType) {
+        if (address.city && address.state) {
             city = address.city;
             state = address.state;
-            farmType = address.farmType;
         }
       }
-      setFarmInfo({ city, state, farmType });
+      setFarmInfo({ city, state });
 
       const climateResponse = await getCityClimate({ city, state });
       if (climateResponse.data) {
