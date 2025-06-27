@@ -1,6 +1,6 @@
 "use client"
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
+import { AreaChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
 
 import {
   Card,
@@ -18,16 +18,6 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart"
 
-const chartData = [
-  { day: "Monday", temperature: 23.1, humidity: 65, light: 12.1 },
-  { day: "Tuesday", temperature: 24.5, humidity: 68, light: 12.5 },
-  { day: "Wednesday", temperature: 24.8, humidity: 70, light: 12.8 },
-  { day: "Thursday", temperature: 25.2, humidity: 67, light: 13.0 },
-  { day: "Friday", temperature: 24.9, humidity: 66, light: 12.7 },
-  { day: "Saturday", temperature: 23.8, humidity: 64, light: 11.9 },
-  { day: "Sunday", temperature: 25.5, humidity: 69, light: 13.2 },
-]
-
 const chartConfig = {
   temperature: {
     label: "Temperature (°C)",
@@ -41,9 +31,20 @@ const chartConfig = {
     label: "Light (klx)",
     color: "hsl(var(--chart-2))",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
-export function DataChart() {
+type ChartData = {
+    day: string;
+    temperature: number;
+    humidity: number;
+    light: number;
+};
+
+interface DataChartProps {
+    data: ChartData[];
+}
+
+export function DataChart({ data }: DataChartProps) {
   return (
     <Card>
       <CardHeader>
@@ -52,7 +53,7 @@ export function DataChart() {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-72 w-full">
-            <AreaChart accessibilityLayer data={chartData} margin={{ left: 12, right: 12 }}>
+            <AreaChart accessibilityLayer data={data} margin={{ left: 12, right: 12 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis
                     dataKey="day"
@@ -65,6 +66,7 @@ export function DataChart() {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={10}
+                    domain={['dataMin - 5', 'dataMax + 5']}
                  />
                 <ChartTooltip
                     cursor={true}
@@ -85,9 +87,9 @@ export function DataChart() {
                         <stop offset="95%" stopColor="var(--color-light)" stopOpacity={0.1} />
                     </linearGradient>
                 </defs>
-                <Area dataKey="temperature" type="natural" fill="url(#fillTemperature)" fillOpacity={0.4} stroke="var(--color-temperature)" strokeWidth={2} stackId="a" />
-                <Area dataKey="humidity" type="natural" fill="url(#fillHumidity)" fillOpacity={0.4} stroke="var(--color-humidity)" strokeWidth={2} stackId="b" />
-                <Area dataKey="light" type="natural" fill="url(#fillLight)" fillOpacity={0.4} stroke="var(--color-light)" strokeWidth={2} stackId="c" />
+                <Area dataKey="temperature" type="natural" fill="url(#fillTemperature)" fillOpacity={0.4} stroke="var(--color-temperature)" strokeWidth={2} />
+                <Area dataKey="humidity" type="natural" fill="url(#fillHumidity)" fillOpacity={0.4} stroke="var(--color-humidity)" strokeWidth={2} />
+                <Area dataKey="light" type="natural" fill="url(#fillLight)" fillOpacity={0.4} stroke="var(--color-light)" strokeWidth={2} />
             </AreaChart>
         </ChartContainer>
       </CardContent>

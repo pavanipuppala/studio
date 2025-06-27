@@ -2,25 +2,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Leaf } from "lucide-react";
 
-const crops = [
-  {
-    name: "Leafy Greens",
-    health: 92,
-    stage: "Mid Growth",
-  },
-  {
-    name: "Strawberries",
-    health: 78,
-    stage: "Flowering",
-  },
-  {
-    name: "Herbs",
-    health: 85,
-    stage: "Harvest Ready",
-  },
-];
+type Crop = {
+    name: string;
+    health: number;
+    stage: string;
+};
 
-export function CropStatus() {
+interface CropStatusProps {
+    crops: Crop[];
+}
+
+export function CropStatus({ crops }: CropStatusProps) {
   return (
     <Card>
       <CardHeader>

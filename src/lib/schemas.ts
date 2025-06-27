@@ -29,3 +29,8 @@ export const AiOptimizerSchema = z.object({
   humidity: z.coerce.number().min(0).max(100, "Invalid humidity"),
   lightLevel: z.coerce.number().min(0, "Invalid light level"),
 });
+
+export const CropRecommendationSchema = z.object({
+    city: z.string(),
+    state: z.string(),
+});

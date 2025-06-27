@@ -20,7 +20,7 @@ const OptimizeCropYieldInputSchema = z.object({
   humidity: z.number().describe('The current humidity as a percentage.'),
   lightLevel: z
     .number()
-    .describe('The current light level in lumens.'),
+    .describe('The current light level in Lux.'),
   cropType: z.string().describe('The type of crop being grown.'),
 });
 export type OptimizeCropYieldInput = z.infer<typeof OptimizeCropYieldInputSchema>;
@@ -56,7 +56,7 @@ Based on the following sensor data, recommend adjustments to the temperature, hu
 Crop Type: {{{cropType}}}
 Current Temperature: {{{temperature}}}°C
 Current Humidity: {{{humidity}}}%
-Current Light Level: {{{lightLevel}}} lumens
+Current Light Level: {{{lightLevel}}} Lux
 
 Give a short summary of the reason you are making this recommendation.
 
