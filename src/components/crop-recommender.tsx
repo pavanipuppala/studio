@@ -9,19 +9,25 @@ import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
 import { getRecommendedCrop } from "@/lib/actions";
 
 export function CropRecommender() {
-  const [location, setLocation] = useState<{ city: string; state: string } | null>(null);
+  const [farmInfo, setFarmInfo] = useState<{ city: string; state: string; farmType: string } | null>(null);
   const [result, setResult] = useState<RecommendCropOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // This component depends on client-side data.
+    // To prevent hydration mismatches, we ensure this code runs only on the client.
     const storedAddress = localStorage.getItem('farm_address');
     if (storedAddress) {
       const address = JSON.parse(storedAddress);
-      if (address.city && address.state) {
-        setLocation({ city: address.city, state: address.state });
+      if (address.city && address.state && address.farmType) {
+        setFarmInfo({ 
+            city: address.city, 
+            state: address.state,
+            farmType: address.farmType
+        });
       } else {
-        setError("Farm location not fully set. Please update in settings.");
+        setError("Farm location or type not fully set. Please update your address information.");
         setIsLoading(false);
       }
     } else {
@@ -31,11 +37,11 @@ export function CropRecommender() {
   }, []);
 
   useEffect(() => {
-    if (location) {
+    if (farmInfo) {
       const fetchRecommendation = async () => {
         setIsLoading(true);
         setError(null);
-        const response = await getRecommendedCrop(location);
+        const response = await getRecommendedCrop(farmInfo);
         if (response.data) {
           setResult(response.data);
         } else {
@@ -45,7 +51,7 @@ export function CropRecommender() {
       };
       fetchRecommendation();
     }
-  }, [location]);
+  }, [farmInfo]);
 
   return (
     <Card>
@@ -54,9 +60,9 @@ export function CropRecommender() {
             <Lightbulb className="h-6 w-6 text-primary" />
             <span>AI Crop Recommendation</span>
         </CardTitle>
-        {location && (
+        {farmInfo && (
              <CardDescription className="flex items-center gap-1 pt-1">
-                <MapPin className="h-3 w-3" /> For your location in {location.city}, {location.state}
+                <MapPin className="h-3 w-3" /> For your {farmInfo.farmType.toLowerCase()} farm in {farmInfo.city}, {farmInfo.state}
             </CardDescription>
         )}
       </CardHeader>
@@ -80,7 +86,7 @@ export function CropRecommender() {
                 <h3 className="text-2xl font-bold text-primary">{result.cropName}</h3>
              </div>
              <div>
-                <p className="text-sm text-muted-foreground mb-1">Suggested Farming Methods</p>
+                <p className="text-sm text-muted-foreground mb-1">Suggested Farming Method</p>
                 <div className="flex gap-2">
                     {result.farmingMethods.map(method => (
                         <Badge key={method} variant="secondary">{method}</Badge>

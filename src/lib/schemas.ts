@@ -38,6 +38,7 @@ export const IdealConditionsSchema = z.object({
 export const CropRecommendationSchema = z.object({
     city: z.string(),
     state: z.string(),
+    farmType: z.string(),
 });
 
 export const CityClimateSchema = z.object({

@@ -14,6 +14,7 @@ import {z} from 'genkit';
 const RecommendCropInputSchema = z.object({
   city: z.string().describe('The city where the farm is located.'),
   state: z.string().describe('The state where the farm is located.'),
+  farmType: z.string().describe('The type of vertical farm (e.g., Hydroponic, Aeroponic).'),
 });
 export type RecommendCropInput = z.infer<typeof RecommendCropInputSchema>;
 
@@ -36,13 +37,14 @@ const prompt = ai.definePrompt({
   output: {schema: RecommendCropOutputSchema},
   prompt: `You are an agricultural expert specializing in vertical farming in India.
 
-Based on the location provided (city and state), recommend a single, highly suitable crop to grow in an indoor vertical farm.
+Based on the location and specific farm type provided, recommend a single, highly suitable crop to grow.
 
-Your recommendation should consider the general climate of the region, local market demand, and suitability for vertical farming techniques.
+Your recommendation should consider the general climate of the region, local market demand, and high compatibility with the specified vertical farming technique. For the 'farmingMethods' output field, return an array containing only the provided farm type.
 
 Location: {{{city}}}, {{{state}}}, India
+Farm Type: {{{farmType}}}
 
-Also, suggest the best farming methods (e.g., Hydroponics, Aeroponics, Aquaponics) for this specific crop and provide a clear, concise reason for your overall recommendation.`,
+Provide a clear, concise reason for your recommendation.`,
 });
 
 const recommendCropFlow = ai.defineFlow(
