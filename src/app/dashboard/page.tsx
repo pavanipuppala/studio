@@ -77,7 +77,6 @@ export default function DashboardPage() {
           });
           setClimateInfo({ description: climateResponse.data.climateDescription });
       } else {
-          console.error("Could not fetch climate data:", climateResponse.error);
           setBaseMetrics({ temp: 24.5, humidity: 65 });
           setClimateInfo({ description: "Default temperate climate." });
       }
