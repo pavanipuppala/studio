@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Filter, Loader2 } from "lucide-react";
 
 import { getGeneratedAlerts, getRecommendedCrop } from "@/lib/actions";
+import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
 import { AlertCard, type Alert } from "@/components/alert-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,14 +41,23 @@ export default function AlertsPage() {
       return;
     }
 
+    let farmContext: RecommendCropOutput | null = null;
     const cropResponse = await getRecommendedCrop({ city, state });
-    if (cropResponse.error || !cropResponse.data) {
-      setError(cropResponse.error || "Could not retrieve farm context to generate alerts.");
-      setLoading(false);
-      return;
+
+    if (cropResponse.data) {
+      farmContext = cropResponse.data;
+      localStorage.setItem('lastValidCropRecommendation', JSON.stringify(cropResponse.data));
+    } else {
+      const cachedCropRaw = localStorage.getItem('lastValidCropRecommendation');
+      if (cachedCropRaw) {
+        farmContext = JSON.parse(cachedCropRaw);
+      } else {
+        setLoading(false);
+        return; // No live data, no cache, can't generate alerts.
+      }
     }
 
-    const { cropName, predictedFarmType } = cropResponse.data;
+    const { cropName, predictedFarmType } = farmContext;
 
     const alertsResponse = await getGeneratedAlerts({ city, state, cropName, farmType: predictedFarmType });
 
@@ -97,8 +107,6 @@ export default function AlertsPage() {
         if (cachedAlertsRaw) {
             const cachedData = JSON.parse(cachedAlertsRaw);
             setAlerts(cachedData.alerts);
-        } else {
-            setError(null);
         }
     }
     setLoading(false);
@@ -212,7 +220,7 @@ export default function AlertsPage() {
                     ))
                 ) : (
                     <motion.div className="col-span-full text-center py-12 text-muted-foreground">
-                        <p>No alerts match the current filters.</p>
+                        <p>No alerts to display.</p>
                     </motion.div>
                 )}
             </AnimatePresence>
