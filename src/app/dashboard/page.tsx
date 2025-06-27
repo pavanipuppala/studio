@@ -48,6 +48,7 @@ export default function DashboardPage() {
   const [climateInfo, setClimateInfo] = useState<{ description: string } | null>(null);
   const [farmInfo, setFarmInfo] = useState<{ city: string; state: string; } | null>(null);
   const [recommendedCrop, setRecommendedCrop] = useState<RecommendCropOutput | null>(null);
+  const [previousCrops, setPreviousCrops] = useState<string[]>([]);
   const [isRecommenderLoading, setIsRecommenderLoading] = useState(false);
   const [recommenderError, setRecommenderError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -55,7 +56,11 @@ export default function DashboardPage() {
   useEffect(() => {
     const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
     if (cachedRecommendationRaw) {
-      setRecommendedCrop(JSON.parse(cachedRecommendationRaw));
+      const recommendation = JSON.parse(cachedRecommendationRaw);
+      setRecommendedCrop(recommendation);
+      if (recommendation.cropName && !previousCrops.includes(recommendation.cropName)) {
+        setPreviousCrops([recommendation.cropName]);
+      }
     }
 
     const initializeDashboard = async () => {
@@ -80,6 +85,7 @@ export default function DashboardPage() {
           });
           setClimateInfo({ description: climateResponse.data.climateDescription });
       } else {
+          // Fallback to defaults without showing an error
           setBaseMetrics({ temp: 24.5, humidity: 65 });
           setClimateInfo({ description: "Default temperate climate." });
       }
@@ -93,9 +99,13 @@ export default function DashboardPage() {
     }
     setIsRecommenderLoading(true);
     setRecommenderError(null);
-    const response = await getRecommendedCrop(farmInfo);
+    const response = await getRecommendedCrop({ ...farmInfo, excludeCrops: previousCrops });
+    
     if (response.data) {
         setRecommendedCrop(response.data);
+        if (response.data.cropName && !previousCrops.includes(response.data.cropName)) {
+            setPreviousCrops(prev => [...prev, response.data.cropName]);
+        }
         localStorage.setItem('lastValidCropRecommendation', JSON.stringify(response.data));
     } else {
         const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
@@ -105,7 +115,7 @@ export default function DashboardPage() {
         }
     }
     setIsRecommenderLoading(false);
-  }, [farmInfo]);
+  }, [farmInfo, previousCrops]);
 
   useEffect(() => {
     if (!baseMetrics) return;
