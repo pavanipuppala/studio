@@ -28,18 +28,7 @@ export function CropRecommender({ recommendation, farmInfo, isLoading, error, on
     }
 
     if (error) {
-      return (
-        <div className="space-y-4 text-center h-40 flex flex-col justify-center">
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-          <Button onClick={onFetchRecommendation} className="w-full">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Try Again
-          </Button>
-        </div>
-      );
+        return null;
     }
 
     if (recommendation) {
