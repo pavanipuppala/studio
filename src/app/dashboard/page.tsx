@@ -39,6 +39,19 @@ type ChartData = { day: string; temperature: number; humidity: number; light: nu
 type CropData = { name: string; health: number; stage: string };
 type AlertData = { icon: JSX.Element; title: string; description: string; time: string; severity: "High" | "Medium" | "Low" };
 
+// A simple mapping of states to climate types for more realistic simulation
+const climateZones: { [key: string]: 'hot' | 'temperate' | 'cold' | 'humid' } = {
+    "Rajasthan": 'hot', "Gujarat": 'hot', "Madhya Pradesh": 'hot', "Telangana": 'hot',
+    "Andhra Pradesh": 'hot', "Tamil Nadu": 'hot', "Uttar Pradesh": 'hot', "Bihar": 'hot',
+    "Haryana": 'hot', "Delhi": 'hot', "Punjab": 'hot',
+    "Maharashtra": 'temperate', "Karnataka": 'temperate', "Chhattisgarh": 'temperate', "Jharkhand": 'temperate',
+    "Goa": 'humid', "Kerala": 'humid', "West Bengal": 'humid', "Odisha": 'humid', "Assam": 'humid', "Meghalaya": 'humid', "Tripura": 'humid',
+    "Mizoram": 'humid', "Manipur": 'humid', "Nagaland": 'humid', "Andaman and Nicobar Islands": 'humid', "Lakshadweep": 'humid', "Puducherry": 'humid',
+    "Jammu and Kashmir": 'cold', "Ladakh": 'cold', "Himachal Pradesh": 'cold', "Uttarakhand": 'cold',
+    "Arunachal Pradesh": 'cold', "Sikkim": 'cold',
+};
+
+
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<{ temp: MetricData | null; humidity: MetricData | null; light: MetricData | null }>({ temp: null, humidity: null, light: null });
@@ -48,23 +61,55 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchData = () => {
+      let baseTemp = 24.5; // Default temperate
+      let baseHumidity = 65; // Default
+      
+      const storedAddress = localStorage.getItem('farm_address');
+      if (storedAddress) {
+          const address = JSON.parse(storedAddress);
+          if (address.state) {
+              const zone = climateZones[address.state as keyof typeof climateZones] || 'temperate';
+            
+              switch(zone) {
+                case 'hot':
+                  baseTemp = 29;
+                  baseHumidity = 55;
+                  break;
+                case 'cold':
+                  baseTemp = 18;
+                  baseHumidity = 60;
+                  break;
+                case 'humid':
+                  baseTemp = 27;
+                  baseHumidity = 75;
+                  break;
+                case 'temperate':
+                default:
+                  baseTemp = 24.5;
+                  baseHumidity = 65;
+                  break;
+              }
+          }
+      }
+
       // Metrics
-      const tempValue = 24.5 + (Math.random() - 0.5);
-      const humidityValue = 68 + (Math.random() * 4 - 2);
+      const tempValue = baseTemp + (Math.random() - 0.5) * 2;
+      const humidityValue = baseHumidity + (Math.random() * 4 - 2);
+      // Light is a controlled variable in a vertical farm, independent of outside location
       const lightValue = 12.5 + (Math.random() * 0.4 - 0.2);
 
       setMetrics({
-        temp: { value: `${tempValue.toFixed(1)}°C`, change: `${(Math.random() * 0.5).toFixed(1)}°C`, changeType: Math.random() > 0.5 ? 'increase' : 'decrease', trendData: Array.from({ length: 5 }, (_, i) => ({ x: i, y: 24 + Math.random() })) },
-        humidity: { value: `${humidityValue.toFixed(0)}%`, change: `${Math.round(Math.random() * 2)}%`, changeType: Math.random() > 0.5 ? 'increase' : 'decrease', trendData: Array.from({ length: 5 }, (_, i) => ({ x: i, y: 67 + Math.random() * 2 })) },
-        light: { value: `${lightValue.toFixed(1)} klx`, change: `${(Math.random() * 0.2).toFixed(1)} klx`, changeType: 'increase', trendData: Array.from({ length: 5 }, (_, i) => ({ x: i, y: 12 + Math.random() * 0.5 })) },
+        temp: { value: `${tempValue.toFixed(1)}°C`, change: `${(Math.random() * 0.5).toFixed(1)}°C`, changeType: Math.random() > 0.5 ? 'increase' : 'decrease', trendData: Array.from({ length: 10 }, (_, i) => ({ x: i, y: baseTemp - 1 + Math.random()*2 })) },
+        humidity: { value: `${humidityValue.toFixed(0)}%`, change: `${Math.round(Math.random() * 2)}%`, changeType: Math.random() > 0.5 ? 'increase' : 'decrease', trendData: Array.from({ length: 10 }, (_, i) => ({ x: i, y: baseHumidity - 2 + Math.random() * 4 })) },
+        light: { value: `${lightValue.toFixed(1)} klx`, change: `${(Math.random() * 0.2).toFixed(1)} klx`, changeType: 'increase', trendData: Array.from({ length: 10 }, (_, i) => ({ x: i, y: 12 + Math.random() * 0.5 })) },
       });
 
       // Chart Data
       const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
       setChartData(days.map(day => ({
         day,
-        temperature: 23 + Math.random() * 3,
-        humidity: 65 + Math.random() * 10,
+        temperature: baseTemp - 2 + Math.random() * 4,
+        humidity: baseHumidity - 5 + Math.random() * 10,
         light: 12 + Math.random() * 1.5
       })));
 
