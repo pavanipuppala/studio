@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const containerVariants = {
@@ -140,33 +141,45 @@ export default function SettingsPage() {
                 <Label htmlFor="email-notifications">Email Notifications</Label>
                 <p className='text-sm text-muted-foreground'>Receive important alerts and summaries via email.</p>
               </div>
-              <Switch
-                id="email-notifications"
-                checked={settings.notifications.email}
-                onCheckedChange={(checked) => handleSettingsChange('notifications', 'email', checked)}
-              />
+              {isClient ? (
+                  <Switch
+                    id="email-notifications"
+                    checked={settings.notifications.email}
+                    onCheckedChange={(checked) => handleSettingsChange('notifications', 'email', checked)}
+                  />
+              ) : (
+                  <Skeleton className="h-6 w-11 rounded-full" />
+              )}
             </div>
             <div className="flex items-center justify-between space-x-2 p-4 rounded-lg border">
               <div className='space-y-1'>
                 <Label htmlFor="high-severity-alerts">Notify on Critical Alerts</Label>
                  <p className='text-sm text-muted-foreground'>Issues requiring immediate attention.</p>
               </div>
-              <Switch
-                id="high-severity-alerts"
-                checked={settings.notifications.highSeverity}
-                onCheckedChange={(checked) => handleSettingsChange('notifications', 'highSeverity', checked)}
-              />
+              {isClient ? (
+                <Switch
+                  id="high-severity-alerts"
+                  checked={settings.notifications.highSeverity}
+                  onCheckedChange={(checked) => handleSettingsChange('notifications', 'highSeverity', checked)}
+                />
+              ) : (
+                  <Skeleton className="h-6 w-11 rounded-full" />
+              )}
             </div>
              <div className="flex items-center justify-between space-x-2 p-4 rounded-lg border">
               <div className='space-y-1'>
                 <Label htmlFor="medium-severity-alerts">Notify on Warning Alerts</Label>
                  <p className='text-sm text-muted-foreground'>Notifications about potential issues.</p>
               </div>
-              <Switch
-                id="medium-severity-alerts"
-                checked={settings.notifications.mediumSeverity}
-                onCheckedChange={(checked) => handleSettingsChange('notifications', 'mediumSeverity', checked)}
-              />
+              {isClient ? (
+                <Switch
+                  id="medium-severity-alerts"
+                  checked={settings.notifications.mediumSeverity}
+                  onCheckedChange={(checked) => handleSettingsChange('notifications', 'mediumSeverity', checked)}
+                />
+              ) : (
+                <Skeleton className="h-6 w-11 rounded-full" />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -183,13 +196,13 @@ export default function SettingsPage() {
                   <Label>Temperature Range (°C)</Label>
                   <div className='flex items-center gap-4'>
                       <span className='text-sm text-muted-foreground w-12 text-center'>{settings.thresholds.temperature[0]}°C</span>
-                       {isClient && <Slider
+                       {isClient ? <Slider
                             min={0}
                             max={40}
                             step={1}
                             value={settings.thresholds.temperature}
                             onValueChange={(value) => handleThresholdChange('temperature', value)}
-                        />}
+                        /> : <Skeleton className="h-2 flex-1" />}
                        <span className='text-sm text-muted-foreground w-12 text-center'>{settings.thresholds.temperature[1]}°C</span>
                   </div>
               </div>
@@ -197,13 +210,13 @@ export default function SettingsPage() {
                   <Label>Humidity Range (%)</Label>
                    <div className='flex items-center gap-4'>
                       <span className='text-sm text-muted-foreground w-12 text-center'>{settings.thresholds.humidity[0]}%</span>
-                      {isClient && <Slider
+                      {isClient ? <Slider
                           min={20}
                           max={90}
                           step={1}
                           value={settings.thresholds.humidity}
                           onValueChange={(value) => handleThresholdChange('humidity', value)}
-                      />}
+                      /> : <Skeleton className="h-2 flex-1" />}
                       <span className='text-sm text-muted-foreground w-12 text-center'>{settings.thresholds.humidity[1]}%</span>
                   </div>
               </div>
@@ -219,26 +232,34 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <Label>Theme</Label>
-            <RadioGroup value={theme} onValueChange={setTheme} className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
-              <div>
-                <RadioGroupItem value="light" id="light" className="peer sr-only" />
-                <Label htmlFor="light" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                  Light
-                </Label>
-              </div>
-               <div>
-                <RadioGroupItem value="dark" id="dark" className="peer sr-only" />
-                <Label htmlFor="dark" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                  Dark
-                </Label>
-              </div>
-               <div>
-                <RadioGroupItem value="system" id="system" className="peer sr-only" />
-                <Label htmlFor="system" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
-                  System
-                </Label>
-              </div>
-            </RadioGroup>
+             {isClient ? (
+                <RadioGroup value={theme} onValueChange={setTheme} className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                  <div>
+                    <RadioGroupItem value="light" id="light" className="peer sr-only" />
+                    <Label htmlFor="light" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      Light
+                    </Label>
+                  </div>
+                   <div>
+                    <RadioGroupItem value="dark" id="dark" className="peer sr-only" />
+                    <Label htmlFor="dark" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      Dark
+                    </Label>
+                  </div>
+                   <div>
+                    <RadioGroupItem value="system" id="system" className="peer sr-only" />
+                    <Label htmlFor="system" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                      System
+                    </Label>
+                  </div>
+                </RadioGroup>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                    <Skeleton className="h-[72px] rounded-md" />
+                    <Skeleton className="h-[72px] rounded-md" />
+                    <Skeleton className="h-[72px] rounded-md" />
+                </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>
