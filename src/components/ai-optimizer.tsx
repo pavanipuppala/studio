@@ -46,16 +46,24 @@ export function AiOptimizer({ cropType, temperature, humidity, lightLevel }: AiO
   });
 
   useEffect(() => {
-    // This effect runs when the props change, updating the form with "live" data.
-    const valuesToReset: Partial<z.infer<typeof AiOptimizerSchema>> = {};
-    if (cropType) valuesToReset.cropType = cropType;
-    if (temperature) valuesToReset.temperature = parseFloat(temperature.toFixed(1));
-    if (humidity) valuesToReset.humidity = Math.round(humidity);
-    if (lightLevel) valuesToReset.lightLevel = Math.round(lightLevel);
+    const { dirtyFields } = form.formState;
 
-    if (Object.keys(valuesToReset).length > 0) {
-      form.reset(currentValues => ({ ...currentValues, ...valuesToReset }));
+    // Only update cropType from prop if the user hasn't manually edited it.
+    if (cropType && !dirtyFields.cropType) {
+      form.setValue('cropType', cropType);
     }
+    
+    // Always update live metrics from props.
+    if (temperature) {
+        form.setValue('temperature', parseFloat(temperature.toFixed(1)));
+    }
+    if (humidity) {
+        form.setValue('humidity', Math.round(humidity));
+    }
+    if (lightLevel) {
+        form.setValue('lightLevel', Math.round(lightLevel));
+    }
+    
   }, [cropType, temperature, humidity, lightLevel, form]);
 
 
