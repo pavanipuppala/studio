@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { format, subDays } from "date-fns";
 import { MetricCard } from "@/components/metric-card";
@@ -48,7 +48,7 @@ export default function DashboardPage() {
   const [climateInfo, setClimateInfo] = useState<{ description: string } | null>(null);
   const [farmInfo, setFarmInfo] = useState<{ city: string; state: string; } | null>(null);
   const [recommendedCrop, setRecommendedCrop] = useState<RecommendCropOutput | null>(null);
-  const [isRecommenderLoading, setIsRecommenderLoading] = useState(true);
+  const [isRecommenderLoading, setIsRecommenderLoading] = useState(false);
   const [recommenderError, setRecommenderError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,25 +82,21 @@ export default function DashboardPage() {
     initializeDashboard();
   }, []);
 
-  useEffect(() => {
-    if (farmInfo) {
-      const fetchRecommendation = async () => {
-        setIsRecommenderLoading(true);
-        setRecommenderError(null);
-        const response = await getRecommendedCrop(farmInfo);
-        if (response.data) {
-          setRecommendedCrop(response.data);
-        } else {
-          setRecommenderError(response.error || "Failed to get recommendation.");
-        }
-        setIsRecommenderLoading(false);
-      };
-      fetchRecommendation();
-    } else if (!loading) {
-      setIsRecommenderLoading(false);
-      setRecommenderError("Farm address not found. Please set your location first.");
+  const handleFetchRecommendation = useCallback(async () => {
+    if (!farmInfo) {
+        setRecommenderError("Farm address not found. Please set your location first.");
+        return;
     }
-  }, [farmInfo, loading]);
+    setIsRecommenderLoading(true);
+    setRecommenderError(null);
+    const response = await getRecommendedCrop(farmInfo);
+    if (response.data) {
+        setRecommendedCrop(response.data);
+    } else {
+        setRecommenderError(response.error || "Failed to get recommendation.");
+    }
+    setIsRecommenderLoading(false);
+  }, [farmInfo]);
 
   useEffect(() => {
     if (!baseMetrics) return;
@@ -215,6 +211,7 @@ export default function DashboardPage() {
               farmInfo={farmInfo}
               isLoading={isRecommenderLoading}
               error={recommenderError}
+              onFetchRecommendation={handleFetchRecommendation}
             />
             <IdealConditions />
             <AlertsPreview alerts={alertData} />
