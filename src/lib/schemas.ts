@@ -44,3 +44,10 @@ export const CityClimateSchema = z.object({
     city: z.string(),
     state: z.string(),
 });
+
+export const GenerateAlertsInputSchema = z.object({
+  city: z.string(),
+  state: z.string(),
+  cropName: z.string(),
+  farmType: z.string(),
+});
