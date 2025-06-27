@@ -71,37 +71,11 @@ export default function AlertsPage() {
     }
 
     if (latestAlerts.length > 0) {
-        // Find which alerts are new for notifications by comparing with current state
-        const currentAlertIds = new Set(alerts.map(a => a.id));
-        const newActiveAlerts = latestAlerts.filter(a => !currentAlertIds.has(a.id) && a.status === 'Active');
-        
-        // Update the state with the full new list of alerts
         setAlerts(latestAlerts);
-
-        // Handle side-effects (notifications) separately to avoid render errors
-        const savedSettingsRaw = localStorage.getItem('farmSettings');
-        const settings = savedSettingsRaw ? JSON.parse(savedSettingsRaw).notifications : { email: true, highSeverity: true, mediumSeverity: false };
-        
-        if (settings.email && newActiveAlerts.length > 0) {
-            const userProfileRaw = localStorage.getItem('userProfile');
-            const userEmail = userProfileRaw ? JSON.parse(userProfileRaw).email : 'your email';
-
-            newActiveAlerts.forEach(alert => {
-              const shouldNotify = (alert.severity === 'Critical' && settings.highSeverity) ||
-                                   (alert.severity === 'Warning' && settings.mediumSeverity);
-
-              if (shouldNotify) {
-                toast({
-                  title: `📧 Email Notification Simulated`,
-                  description: `An email for the '${alert.severity}' alert on '${alert.component}' has been sent to ${userEmail}.`,
-                });
-              }
-            });
-        }
     }
     
     setLoading(false);
-  }, [toast, alerts]);
+  }, []);
 
   useEffect(() => {
     const initialFetch = async () => {
