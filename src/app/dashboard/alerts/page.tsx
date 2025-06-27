@@ -103,7 +103,12 @@ export default function AlertsPage() {
                 description: "Could not fetch live alerts. Displaying the last known status.",
             });
         } else {
-            setError(alertsResponse.error || "Failed to generate alerts and no cached data is available.");
+            toast({
+                title: "Failed to Generate Alerts",
+                description: "Could not fetch live alerts and no cached data is available. Please try again later.",
+                variant: "destructive",
+            });
+            setError(null); // We use a toast instead of the error state
         }
     }
     setLoading(false);

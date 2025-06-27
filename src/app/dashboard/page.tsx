@@ -55,6 +55,12 @@ export default function DashboardPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // On initial load, try to get data from local storage first for a faster UI response.
+    const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
+    if (cachedRecommendationRaw) {
+      setRecommendedCrop(JSON.parse(cachedRecommendationRaw));
+    }
+
     const initializeDashboard = async () => {
       let city = "Bengaluru";
       let state = "Karnataka";
@@ -103,9 +109,15 @@ export default function DashboardPage() {
             toast({
                 title: "Using Cached Data",
                 description: "Could not fetch a new recommendation. Displaying the last successful one.",
+                variant: "default"
             });
         } else {
-            setRecommenderError("System alert: Please monitor manually.");
+             toast({
+                title: "Failed to get Recommendation",
+                description: "Could not fetch a new crop recommendation. Please try again later.",
+                variant: "destructive"
+            });
+            setRecommenderError(null); // Clear any previous errors
         }
     }
     setIsRecommenderLoading(false);

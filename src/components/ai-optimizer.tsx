@@ -34,7 +34,6 @@ interface AiOptimizerProps {
 export function AiOptimizer({ cropType, temperature, humidity, lightLevel }: AiOptimizerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<OptimizeCropYieldOutput | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof AiOptimizerSchema>>({
@@ -64,7 +63,6 @@ export function AiOptimizer({ cropType, temperature, humidity, lightLevel }: AiO
   async function onSubmit(values: z.infer<typeof AiOptimizerSchema>) {
     setIsLoading(true);
     setResult(null);
-    setError(null);
     const response = await getAiOptimization(values);
     
     if (response.data) {
@@ -80,7 +78,11 @@ export function AiOptimizer({ cropType, temperature, humidity, lightLevel }: AiO
           description: "Could not fetch new optimization advice. Displaying the last successful one.",
         });
       } else {
-        setError("Could not retrieve optimization advice. Please check your connection and try again.");
+        toast({
+          title: "Failed to get Optimization",
+          description: "Could not retrieve optimization advice. Please check your connection and try again.",
+          variant: "destructive"
+        });
       }
     }
     setIsLoading(false);
@@ -176,12 +178,6 @@ export function AiOptimizer({ cropType, temperature, humidity, lightLevel }: AiO
         </Form>
         
         <div className="mt-6">
-          {error && (
-             <Alert variant="destructive">
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
           {result && (
             <Alert className="border-primary/50 bg-primary/10">
                 <Bot className="h-4 w-4 text-primary" />
