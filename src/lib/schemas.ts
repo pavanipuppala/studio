@@ -21,6 +21,7 @@ export const AddressSchema = z.object({
     state: z.string().min(1, { message: "Please select a state." }),
     pincode: z.string().length(6, { message: "Pincode must be 6 digits." }),
     experience: z.string().min(1, { message: "Please select your experience level." }),
+    farmType: z.string().min(1, { message: "Please select your farm type." }),
 });
 
 export const AiOptimizerSchema = z.object({

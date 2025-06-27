@@ -10,7 +10,6 @@ import { IdealConditions } from "@/components/crop-status";
 import { Thermometer, Droplets, Sun, Info } from "lucide-react";
 import { AlertsPreview } from "@/components/alerts-preview";
 import { CropRecommender } from "@/components/crop-recommender";
-import { FarmingMethods } from "@/components/farming-methods";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCityClimate } from "@/lib/actions";
 
@@ -199,10 +198,6 @@ export default function DashboardPage() {
             <AlertsPreview alerts={alertData} />
         </motion.div>
       </motion.div>
-
-       <motion.div variants={itemVariants}>
-          <FarmingMethods />
-       </motion.div>
 
     </motion.div>
   );

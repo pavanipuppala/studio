@@ -34,6 +34,7 @@ export function AddressForm() {
       state: "",
       pincode: "",
       experience: "",
+      farmType: "",
     },
   });
 
@@ -137,6 +138,29 @@ export function AddressForm() {
                             <SelectItem value="beginner">Beginner (0-2 years experience)</SelectItem>
                             <SelectItem value="moderator">Moderator (3-5 years experience)</SelectItem>
                             <SelectItem value="experienced">Experienced (5+ years experience)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="farmType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Farm Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select your farm type" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="hydroponic">Hydroponic</SelectItem>
+                            <SelectItem value="aeroponic">Aeroponic</SelectItem>
+                            <SelectItem value="aquaponic">Aquaponic</SelectItem>
+                            <SelectItem value="traditional">Traditional Vertical</SelectItem>
                         </SelectContent>
                     </Select>
                   <FormMessage />
