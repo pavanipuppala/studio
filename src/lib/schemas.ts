@@ -31,10 +31,6 @@ export const AiOptimizerSchema = z.object({
   lightLevel: z.coerce.number().min(0, "Invalid light level"),
 });
 
-export const IdealConditionsSchema = z.object({
-  cropName: z.string().min(1, { message: "Crop name is required." }),
-});
-
 export const CropRecommendationSchema = z.object({
     city: z.string(),
     state: z.string(),

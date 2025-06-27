@@ -3,9 +3,8 @@
 import { optimizeCropYield, type OptimizeCropYieldOutput } from '@/ai/flows/optimize-crop-yield';
 import { recommendCrop, type RecommendCropOutput } from '@/ai/flows/recommend-crop-flow';
 import { getCityClimate as getCityClimateFlow, type GetCityClimateOutput } from '@/ai/flows/get-city-climate-flow';
-import { getIdealConditions as getIdealConditionsFlow, type IdealConditionsOutput } from '@/ai/flows/get-ideal-conditions-flow';
 import { generateAlerts as generateAlertsFlow, type GenerateAlertsOutput } from '@/ai/flows/generate-alerts-flow';
-import { AiOptimizerSchema, CropRecommendationSchema, CityClimateSchema, IdealConditionsSchema, GenerateAlertsInputSchema } from './schemas';
+import { AiOptimizerSchema, CropRecommendationSchema, CityClimateSchema, GenerateAlertsInputSchema } from './schemas';
 
 export async function getAiOptimization(
     formData: unknown
@@ -65,25 +64,6 @@ export async function getCityClimate(
         const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
         return { error: `Failed to get city climate: ${errorMessage}` };
     }
-}
-
-export async function getIdealConditions(
-    formData: unknown
-): Promise<{ data?: IdealConditionsOutput; error?: string }> {
-  const validatedFields = IdealConditionsSchema.safeParse(formData);
-
-  if (!validatedFields.success) {
-    return { error: 'Invalid input.' };
-  }
-
-  try {
-    const result = await getIdealConditionsFlow(validatedFields.data);
-    return { data: result };
-  } catch (e) {
-    console.error(e);
-    const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
-    return { error: `Failed to get ideal conditions: ${errorMessage}` };
-  }
 }
 
 export async function getGeneratedAlerts(

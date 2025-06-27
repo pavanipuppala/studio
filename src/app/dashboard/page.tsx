@@ -6,13 +6,13 @@ import { format, subDays } from "date-fns";
 import { MetricCard } from "@/components/metric-card";
 import { DataChart } from "@/components/data-chart";
 import { AiOptimizer } from "@/components/ai-optimizer";
-import { IdealConditions } from "@/components/crop-status";
 import { Thermometer, Droplets, Sun, Info } from "lucide-react";
 import { AlertsPreview } from "@/components/alerts-preview";
 import { CropRecommender } from "@/components/crop-recommender";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCityClimate, getRecommendedCrop } from "@/lib/actions";
 import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
+import { useToast } from "@/hooks/use-toast";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [recommendedCrop, setRecommendedCrop] = useState<RecommendCropOutput | null>(null);
   const [isRecommenderLoading, setIsRecommenderLoading] = useState(false);
   const [recommenderError, setRecommenderError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
@@ -88,7 +89,6 @@ export default function DashboardPage() {
 
   const handleFetchRecommendation = useCallback(async () => {
     if (!farmInfo) {
-        setRecommenderError("Farm address not found. Please set your location first.");
         return;
     }
     setIsRecommenderLoading(true);
@@ -222,7 +222,6 @@ export default function DashboardPage() {
               error={recommenderError}
               onFetchRecommendation={handleFetchRecommendation}
             />
-            <IdealConditions />
             <AlertsPreview alerts={alertData} />
         </motion.div>
       </motion.div>
