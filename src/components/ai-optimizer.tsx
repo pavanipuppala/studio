@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Wand2, Loader2, Lightbulb, Bot, Check, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,14 @@ import type { OptimizeCropYieldOutput } from "@/ai/flows/optimize-crop-yield";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
-export function AiOptimizer() {
+interface AiOptimizerProps {
+  cropType?: string;
+  temperature?: number;
+  humidity?: number;
+  lightLevel?: number;
+}
+
+export function AiOptimizer({ cropType, temperature, humidity, lightLevel }: AiOptimizerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<OptimizeCropYieldOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +39,26 @@ export function AiOptimizer() {
   const form = useForm<z.infer<typeof AiOptimizerSchema>>({
     resolver: zodResolver(AiOptimizerSchema),
     defaultValues: {
-      cropType: "Lettuce",
-      temperature: 24.5,
-      humidity: 68,
-      lightLevel: 12500,
+      cropType: "",
+      temperature: 0,
+      humidity: 0,
+      lightLevel: 0,
     },
   });
+
+  useEffect(() => {
+    // This effect runs when the props change, updating the form with "live" data.
+    const valuesToReset: Partial<z.infer<typeof AiOptimizerSchema>> = {};
+    if (cropType) valuesToReset.cropType = cropType;
+    if (temperature) valuesToReset.temperature = parseFloat(temperature.toFixed(1));
+    if (humidity) valuesToReset.humidity = Math.round(humidity);
+    if (lightLevel) valuesToReset.lightLevel = Math.round(lightLevel);
+
+    if (Object.keys(valuesToReset).length > 0) {
+      form.reset(currentValues => ({ ...currentValues, ...valuesToReset }));
+    }
+  }, [cropType, temperature, humidity, lightLevel, form]);
+
 
   async function onSubmit(values: z.infer<typeof AiOptimizerSchema>) {
     setIsLoading(true);

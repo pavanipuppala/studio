@@ -11,7 +11,8 @@ import { Thermometer, Droplets, Sun, Info } from "lucide-react";
 import { AlertsPreview } from "@/components/alerts-preview";
 import { CropRecommender } from "@/components/crop-recommender";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCityClimate } from "@/lib/actions";
+import { getCityClimate, getRecommendedCrop } from "@/lib/actions";
+import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -28,7 +29,6 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 }
 };
 
-// Types for our dynamic data
 type MetricData = {
   value: string;
   change: string;
@@ -46,25 +46,28 @@ export default function DashboardPage() {
   const [alertData, setAlertData] = useState<AlertData[]>([]);
   const [baseMetrics, setBaseMetrics] = useState<{temp: number, humidity: number} | null>(null);
   const [climateInfo, setClimateInfo] = useState<{ description: string } | null>(null);
-  const [location, setLocation] = useState<{ city: string; state: string } | null>(null);
+  const [farmInfo, setFarmInfo] = useState<{ city: string; state: string; farmType: string } | null>(null);
+  const [recommendedCrop, setRecommendedCrop] = useState<RecommendCropOutput | null>(null);
+  const [isRecommenderLoading, setIsRecommenderLoading] = useState(true);
+  const [recommenderError, setRecommenderError] = useState<string | null>(null);
 
-  // Effect to get location and fetch climate data from AI
   useEffect(() => {
     const initializeDashboard = async () => {
       let city = "Bengaluru";
       let state = "Karnataka";
+      let farmType = "Hydroponic";
 
       const storedAddress = localStorage.getItem('farm_address');
       if (storedAddress) {
         const address = JSON.parse(storedAddress);
-        if (address.city && address.state) {
+        if (address.city && address.state && address.farmType) {
             city = address.city;
             state = address.state;
+            farmType = address.farmType;
         }
       }
-      setLocation({ city, state });
+      setFarmInfo({ city, state, farmType });
 
-      // Call new AI action to get climate data
       const climateResponse = await getCityClimate({ city, state });
       if (climateResponse.data) {
           setBaseMetrics({
@@ -73,7 +76,6 @@ export default function DashboardPage() {
           });
           setClimateInfo({ description: climateResponse.data.climateDescription });
       } else {
-          // Fallback to defaults if AI fails
           console.error("Could not fetch climate data:", climateResponse.error);
           setBaseMetrics({ temp: 24.5, humidity: 65 });
           setClimateInfo({ description: "Default temperate climate." });
@@ -82,17 +84,34 @@ export default function DashboardPage() {
     initializeDashboard();
   }, []);
 
-  // Effect to generate and update simulated data based on baseMetrics
+  useEffect(() => {
+    if (farmInfo) {
+      const fetchRecommendation = async () => {
+        setIsRecommenderLoading(true);
+        setRecommenderError(null);
+        const response = await getRecommendedCrop(farmInfo);
+        if (response.data) {
+          setRecommendedCrop(response.data);
+        } else {
+          setRecommenderError(response.error || "Failed to get recommendation.");
+        }
+        setIsRecommenderLoading(false);
+      };
+      fetchRecommendation();
+    } else if (!loading) {
+      setIsRecommenderLoading(false);
+      setRecommenderError("Farm address not found. Please set your location first.");
+    }
+  }, [farmInfo, loading]);
+
   useEffect(() => {
     if (!baseMetrics) return;
 
     const fetchData = () => {
       const { temp: baseTemp, humidity: baseHumidity } = baseMetrics;
       
-      // Metrics
       const tempValue = baseTemp + (Math.random() - 0.5) * 2;
       const humidityValue = baseHumidity + (Math.random() * 4 - 2);
-      // Light is a controlled variable in a vertical farm, independent of outside location
       const lightValue = 12.5 + (Math.random() * 0.4 - 0.2);
 
       setMetrics({
@@ -101,7 +120,6 @@ export default function DashboardPage() {
         light: { value: `${lightValue.toFixed(1)} klx`, change: `${(Math.random() * 0.2).toFixed(1)} klx`, changeType: 'increase', trendData: Array.from({ length: 10 }, (_, i) => ({ x: i, y: 12 + Math.random() * 0.5 })) },
       });
 
-      // Chart Data for the last 30 days
       const today = new Date();
       setChartData(Array.from({ length: 30 }).map((_, i) => {
         const date = subDays(today, 29 - i);
@@ -113,23 +131,19 @@ export default function DashboardPage() {
         };
       }));
       
-      // Alert Data
       setAlertData([
           { icon: <Thermometer className="h-4 w-4" />, title: "High Temperature", description: "Greenhouse 1 exceeded 30°C.", time: "5m ago", severity: "High" },
           { icon: <Droplets className="h-4 w-4" />, title: "Low Humidity", description: "Lettuce section humidity dropped to 45%.", time: "30m ago", severity: "Medium" },
       ]);
     };
 
-    // Simulate initial network delay
     const initialLoadTimer = setTimeout(() => {
       fetchData();
       setLoading(false);
     }, 1500);
 
-    // Set up a recurring update to simulate live data
-    const intervalId = setInterval(fetchData, 5000); // Refresh every 5 seconds
+    const intervalId = setInterval(fetchData, 5000);
 
-    // Cleanup function to clear timers when the component unmounts
     return () => {
       clearTimeout(initialLoadTimer);
       clearInterval(intervalId);
@@ -171,10 +185,10 @@ export default function DashboardPage() {
     >
       <motion.div variants={itemVariants}>
         <h1 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h1>
-        {location && !loading ? (
+        {farmInfo && !loading ? (
             <p className="text-muted-foreground flex items-center gap-2 pt-1">
                 <Info className="h-4 w-4" /> 
-                <span>Live overview for your farm in {location.city}. Climate: {climateInfo?.description}</span>
+                <span>Live overview for your farm in {farmInfo.city}. Climate: {climateInfo?.description}</span>
             </p>
         ) : (
             <p className="text-muted-foreground">Welcome back! Here's a live overview of your vertical farm.</p>
@@ -190,10 +204,20 @@ export default function DashboardPage() {
       <motion.div variants={containerVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
             <DataChart data={chartData} />
-            <AiOptimizer />
+            <AiOptimizer 
+              cropType={recommendedCrop?.cropName}
+              temperature={metrics.temp ? parseFloat(metrics.temp.value) : undefined}
+              humidity={metrics.humidity ? parseFloat(metrics.humidity.value) : undefined}
+              lightLevel={metrics.light ? parseFloat(metrics.light.value) * 1000 : undefined}
+            />
         </motion.div>
         <motion.div variants={itemVariants} className="lg:col-span-1 space-y-8">
-            <CropRecommender />
+            <CropRecommender 
+              recommendation={recommendedCrop}
+              farmInfo={farmInfo}
+              isLoading={isRecommenderLoading}
+              error={recommenderError}
+            />
             <IdealConditions />
             <AlertsPreview alerts={alertData} />
         </motion.div>
