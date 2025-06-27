@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Settings as SettingsIcon, Bell, Palette, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -39,9 +40,15 @@ export default function SettingsPage() {
     mediumSeverity: false,
   });
 
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('notificationSettings');
+    if (savedSettings) {
+      setNotifications(JSON.parse(savedSettings));
+    }
+  }, []);
+
   const handleSave = () => {
-    // Here you would typically save the settings to a backend or localStorage
-    console.log("Saving settings:", notifications);
+    localStorage.setItem('notificationSettings', JSON.stringify(notifications));
     toast({
       title: "Settings Saved",
       description: "Your preferences have been updated.",

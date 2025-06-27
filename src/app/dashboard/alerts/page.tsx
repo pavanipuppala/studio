@@ -11,11 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState('Active');
@@ -51,6 +53,31 @@ export default function AlertsPage() {
     const alertsResponse = await getGeneratedAlerts({ city, state, cropName, farmType: predictedFarmType });
 
     if (alertsResponse.data) {
+      const savedSettingsRaw = localStorage.getItem('notificationSettings');
+      const settings = savedSettingsRaw ? JSON.parse(savedSettingsRaw) : { email: true, highSeverity: true, mediumSeverity: false };
+
+      if (settings.email) {
+        const currentAlertIds = new Set(alerts.map(a => a.id));
+        const newActiveAlerts = alertsResponse.data.alerts.filter(a => !currentAlertIds.has(a.id) && a.status === 'Active');
+
+        if (newActiveAlerts.length > 0) {
+          const userProfileRaw = localStorage.getItem('userProfile');
+          const userEmail = userProfileRaw ? JSON.parse(userProfileRaw).email : 'your email';
+
+          newActiveAlerts.forEach(alert => {
+            const shouldNotify = (alert.severity === 'Critical' && settings.highSeverity) ||
+                                 (alert.severity === 'Warning' && settings.mediumSeverity);
+
+            if (shouldNotify) {
+              toast({
+                title: `📧 Email Notification Simulated`,
+                description: `An email for the '${alert.severity}' alert on '${alert.component}' has been sent to ${userEmail}.`,
+              });
+            }
+          });
+        }
+      }
+
       // For a "live feed" feel, we merge new active alerts with existing ones
       setAlerts(prevAlerts => {
         const existingIds = new Set(prevAlerts.map(a => a.id));
@@ -66,7 +93,7 @@ export default function AlertsPage() {
       setError(alertsResponse.error || "Failed to generate alerts.");
     }
     setLoading(false);
-  }, []);
+  }, [alerts, toast]);
 
   useEffect(() => {
     setLoading(true);
@@ -182,5 +209,3 @@ export default function AlertsPage() {
     </div>
   );
 }
-
-    
