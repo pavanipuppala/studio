@@ -94,9 +94,9 @@ export default function DashboardPage() {
     const response = await getRecommendedCrop(farmInfo);
     if (response.data) {
         setRecommendedCrop(response.data);
-        localStorage.setItem('lastValidAlert', JSON.stringify(response.data));
+        localStorage.setItem('lastValidCropRecommendation', JSON.stringify(response.data));
     } else {
-        const cachedRecommendationRaw = localStorage.getItem('lastValidAlert');
+        const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
         if (cachedRecommendationRaw) {
             const cachedRecommendation = JSON.parse(cachedRecommendationRaw);
             setRecommendedCrop(cachedRecommendation);

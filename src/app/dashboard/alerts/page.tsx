@@ -43,7 +43,7 @@ export default function AlertsPage() {
 
     const cropResponse = await getRecommendedCrop({ city, state });
     if (cropResponse.error || !cropResponse.data) {
-      setError(cropResponse.error || "Could not retrieve farm context.");
+      setError(cropResponse.error || "Could not retrieve farm context to generate alerts.");
       setLoading(false);
       return;
     }
@@ -53,33 +53,33 @@ export default function AlertsPage() {
     const alertsResponse = await getGeneratedAlerts({ city, state, cropName, farmType: predictedFarmType });
 
     if (alertsResponse.data) {
-      const savedSettingsRaw = localStorage.getItem('notificationSettings');
-      const settings = savedSettingsRaw ? JSON.parse(savedSettingsRaw) : { email: true, highSeverity: true, mediumSeverity: false };
-
-      if (settings.email) {
-        const currentAlertIds = new Set(alerts.map(a => a.id));
-        const newActiveAlerts = alertsResponse.data.alerts.filter(a => !currentAlertIds.has(a.id) && a.status === 'Active');
-
-        if (newActiveAlerts.length > 0) {
-          const userProfileRaw = localStorage.getItem('userProfile');
-          const userEmail = userProfileRaw ? JSON.parse(userProfileRaw).email : 'your email';
-
-          newActiveAlerts.forEach(alert => {
-            const shouldNotify = (alert.severity === 'Critical' && settings.highSeverity) ||
-                                 (alert.severity === 'Warning' && settings.mediumSeverity);
-
-            if (shouldNotify) {
-              toast({
-                title: `📧 Email Notification Simulated`,
-                description: `An email for the '${alert.severity}' alert on '${alert.component}' has been sent to ${userEmail}.`,
-              });
-            }
-          });
-        }
-      }
-
-      // For a "live feed" feel, we merge new active alerts with existing ones
+      localStorage.setItem('lastValidGeneratedAlerts', JSON.stringify(alertsResponse.data));
       setAlerts(prevAlerts => {
+        const savedSettingsRaw = localStorage.getItem('farmSettings');
+        const settings = savedSettingsRaw ? JSON.parse(savedSettingsRaw).notifications : { email: true, highSeverity: true, mediumSeverity: false };
+
+        if (settings.email) {
+          const currentAlertIds = new Set(prevAlerts.map(a => a.id));
+          const newActiveAlerts = alertsResponse.data.alerts.filter(a => !currentAlertIds.has(a.id) && a.status === 'Active');
+
+          if (newActiveAlerts.length > 0) {
+            const userProfileRaw = localStorage.getItem('userProfile');
+            const userEmail = userProfileRaw ? JSON.parse(userProfileRaw).email : 'your email';
+
+            newActiveAlerts.forEach(alert => {
+              const shouldNotify = (alert.severity === 'Critical' && settings.highSeverity) ||
+                                   (alert.severity === 'Warning' && settings.mediumSeverity);
+
+              if (shouldNotify) {
+                toast({
+                  title: `📧 Email Notification Simulated`,
+                  description: `An email for the '${alert.severity}' alert on '${alert.component}' has been sent to ${userEmail}.`,
+                });
+              }
+            });
+          }
+        }
+        
         const existingIds = new Set(prevAlerts.map(a => a.id));
         const newAlerts = alertsResponse.data.alerts.filter(a => !existingIds.has(a.id));
         const updatedAlerts = prevAlerts.map(pa => {
@@ -87,17 +87,34 @@ export default function AlertsPage() {
             return updatedVersion ? { ...pa, status: updatedVersion.status } : pa;
         });
 
-        return [...updatedAlerts, ...newAlerts].sort((a,b) => (a.status === 'Active' ? -1 : 1));
+        return [...newAlerts, ...updatedAlerts].sort((a, b) => {
+          if (a.status === 'Active' && b.status !== 'Active') return -1;
+          if (a.status !== 'Active' && b.status === 'Active') return 1;
+          return 0; // Keep original order for same-status alerts
+        });
       });
     } else {
-      setError(alertsResponse.error || "Failed to generate alerts.");
+        const cachedAlertsRaw = localStorage.getItem('lastValidGeneratedAlerts');
+        if (cachedAlertsRaw) {
+            const cachedData = JSON.parse(cachedAlertsRaw);
+            setAlerts(cachedData.alerts);
+            toast({
+                title: "Using Cached Data",
+                description: "Could not fetch live alerts. Displaying the last known status.",
+            });
+        } else {
+            setError(alertsResponse.error || "Failed to generate alerts and no cached data is available.");
+        }
     }
     setLoading(false);
-  }, [alerts, toast]);
+  }, [toast]);
 
   useEffect(() => {
-    setLoading(true);
-    fetchAlerts();
+    const initialFetch = async () => {
+      setLoading(true);
+      await fetchAlerts();
+    }
+    initialFetch();
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchAlerts, 30000);
