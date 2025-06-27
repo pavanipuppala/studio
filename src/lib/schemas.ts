@@ -35,6 +35,7 @@ export const CropRecommendationSchema = z.object({
     city: z.string(),
     state: z.string(),
     excludeCrops: z.array(z.string()).optional(),
+    forceCropName: z.string().optional(),
 });
 
 export const CityClimateSchema = z.object({

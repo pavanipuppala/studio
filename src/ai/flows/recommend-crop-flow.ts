@@ -14,7 +14,8 @@ import {z} from 'genkit';
 const RecommendCropInputSchema = z.object({
   city: z.string().describe('The city where the farm is located.'),
   state: z.string().describe('The state where the farm is located.'),
-  excludeCrops: z.array(z.string()).optional().describe('A list of crop names to exclude from the recommendation.')
+  excludeCrops: z.array(z.string()).optional().describe('A list of crop names to exclude from the recommendation.'),
+  forceCropName: z.string().optional().describe('If provided, generate a recommendation for this specific crop instead of finding a new one.')
 });
 export type RecommendCropInput = z.infer<typeof RecommendCropInputSchema>;
 
@@ -37,6 +38,11 @@ const prompt = ai.definePrompt({
   output: {schema: RecommendCropOutputSchema},
   prompt: `You are an agricultural expert and creative consultant for vertical farming startups in India.
 
+{{#if forceCropName}}
+Your goal is to provide a detailed justification for growing '{{{forceCropName}}}' in the specified location, along with the most suitable vertical farming method.
+For the output, set 'cropName' to '{{{forceCropName}}}'.
+Provide a new 'reason' and 'predictedFarmType' based on the analysis for '{{{forceCropName}}}'.
+{{else}}
 Your goal is to provide unique and profitable crop recommendations tailored to a specific location. Avoid common choices like spinach or lettuce unless they are exceptionally well-suited for the given location.
 
 {{#if excludeCrops}}
@@ -44,6 +50,7 @@ Please do not recommend any of the following crops: {{#each excludeCrops}}{{{thi
 {{/if}}
 
 Based on the location provided, recommend a single, highly suitable crop to grow and the most appropriate vertical farming method (e.g., Hydroponics, Aeroponics, Aquaponics).
+{{/if}}
 
 Your recommendation must be based on a detailed analysis of:
 1.  **Local Climate**: The general climate of the region.

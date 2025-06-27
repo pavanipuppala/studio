@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Lightbulb, Loader2, MapPin, RefreshCw, Edit, Save, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
 import { Textarea } from "./ui/textarea";
+import { getRecommendedCrop } from "@/lib/actions";
 
 interface CropRecommenderProps {
   recommendation: RecommendCropOutput | null;
@@ -24,6 +25,8 @@ interface CropRecommenderProps {
 export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo, isLoading, error, onFetchRecommendation }: CropRecommenderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState<RecommendCropOutput | null>(recommendation);
+  const [isReasoningLoading, setIsReasoningLoading] = useState(false);
+  const originalCropNameOnEdit = useRef<string | null>(null);
 
   useEffect(() => {
     // Sync local state with prop change, but only when not in edit mode.
@@ -31,6 +34,11 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
       setEditedData(recommendation);
     }
   }, [recommendation, isEditing]);
+  
+  const handleEdit = () => {
+    originalCropNameOnEdit.current = recommendation?.cropName || null;
+    setIsEditing(true);
+  }
 
   const handleSave = () => {
     if (editedData) {
@@ -44,6 +52,32 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
     setIsEditing(false);
   };
   
+  const handleCropNameBlur = async () => {
+    if (!editedData || !farmInfo || !editedData.cropName || isReasoningLoading) return;
+
+    if (editedData.cropName === originalCropNameOnEdit.current) return;
+
+    setIsReasoningLoading(true);
+    const response = await getRecommendedCrop({
+        ...farmInfo,
+        forceCropName: editedData.cropName,
+    });
+    
+    if (response.data) {
+        setEditedData(prev => ({
+            ...(prev!),
+            cropName: response.data.cropName, // Keep the user's entered name which is also returned
+            reason: response.data.reason,
+            predictedFarmType: response.data.predictedFarmType,
+        }));
+        originalCropNameOnEdit.current = response.data.cropName;
+    } else {
+        console.error("Failed to update reasoning:", response.error);
+    }
+    
+    setIsReasoningLoading(false);
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -67,6 +101,7 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
               id="cropName"
               value={editedData.cropName}
               onChange={(e) => setEditedData({ ...editedData, cropName: e.target.value })}
+              onBlur={handleCropNameBlur}
             />
           </div>
           <div className="space-y-2">
@@ -74,6 +109,7 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
             <Select
               value={editedData.predictedFarmType}
               onValueChange={(value) => setEditedData({ ...editedData, predictedFarmType: value })}
+              disabled={isReasoningLoading}
             >
               <SelectTrigger id="farmType">
                 <SelectValue placeholder="Select farm type" />
@@ -86,20 +122,26 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <Label htmlFor="reasoning">Reasoning</Label>
             <Textarea
               id="reasoning"
               value={editedData.reason}
               onChange={(e) => setEditedData({ ...editedData, reason: e.target.value })}
               className="min-h-[120px]"
+              disabled={isReasoningLoading}
             />
+            {isReasoningLoading && (
+                <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-md">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+            )}
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" size="sm" onClick={handleCancel}>
               <X className="mr-2 h-4 w-4" /> Cancel
             </Button>
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} disabled={isReasoningLoading}>
               <Save className="mr-2 h-4 w-4" /> Save Changes
             </Button>
           </div>
@@ -115,7 +157,7 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
               <p className="text-sm text-muted-foreground mb-1">Recommended Crop</p>
               <h3 className="text-2xl font-bold text-primary">{recommendation.cropName}</h3>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditing(true)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleEdit}>
               <Edit className="h-4 w-4" />
               <span className="sr-only">Edit Recommendation</span>
             </Button>
