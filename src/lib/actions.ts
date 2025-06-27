@@ -2,7 +2,8 @@
 
 import { optimizeCropYield, type OptimizeCropYieldOutput } from '@/ai/flows/optimize-crop-yield';
 import { recommendCrop, type RecommendCropOutput } from '@/ai/flows/recommend-crop-flow';
-import { AiOptimizerSchema, CropRecommendationSchema } from './schemas';
+import { getCityClimate as getCityClimateFlow, type GetCityClimateOutput } from '@/ai/flows/get-city-climate-flow';
+import { AiOptimizerSchema, CropRecommendationSchema, CityClimateSchema } from './schemas';
 
 export async function getAiOptimization(
     formData: unknown
@@ -41,5 +42,25 @@ export async function getRecommendedCrop(
         console.error(e);
         const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
         return { error: `Failed to get crop recommendation: ${errorMessage}` };
+    }
+}
+
+export async function getCityClimate(
+    locationData: unknown
+): Promise<{ data?: GetCityClimateOutput; error?: string }> {
+    const validatedFields = CityClimateSchema.safeParse(locationData);
+
+    if (!validatedFields.success) {
+        console.log(validatedFields.error.flatten().fieldErrors);
+        return { error: 'Invalid location data.' };
+    }
+
+    try {
+        const result = await getCityClimateFlow(validatedFields.data);
+        return { data: result };
+    } catch (e) {
+        console.error(e);
+        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+        return { error: `Failed to get city climate: ${errorMessage}` };
     }
 }

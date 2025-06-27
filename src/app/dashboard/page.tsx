@@ -6,11 +6,12 @@ import { MetricCard } from "@/components/metric-card";
 import { DataChart } from "@/components/data-chart";
 import { AiOptimizer } from "@/components/ai-optimizer";
 import { CropStatus } from "@/components/crop-status";
-import { Thermometer, Droplets, Sun } from "lucide-react";
+import { Thermometer, Droplets, Sun, Info } from "lucide-react";
 import { AlertsPreview } from "@/components/alerts-preview";
 import { CropRecommender } from "@/components/crop-recommender";
 import { FarmingMethods } from "@/components/farming-methods";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getCityClimate } from "@/lib/actions";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -39,59 +40,57 @@ type ChartData = { day: string; temperature: number; humidity: number; light: nu
 type CropData = { name: string; health: number; stage: string };
 type AlertData = { icon: JSX.Element; title: string; description: string; time: string; severity: "High" | "Medium" | "Low" };
 
-// A simple mapping of states to climate types for more realistic simulation
-const climateZones: { [key: string]: 'hot' | 'temperate' | 'cold' | 'humid' } = {
-    "Rajasthan": 'hot', "Gujarat": 'hot', "Madhya Pradesh": 'hot', "Telangana": 'hot',
-    "Andhra Pradesh": 'hot', "Tamil Nadu": 'hot', "Uttar Pradesh": 'hot', "Bihar": 'hot',
-    "Haryana": 'hot', "Delhi": 'hot', "Punjab": 'hot',
-    "Maharashtra": 'temperate', "Karnataka": 'temperate', "Chhattisgarh": 'temperate', "Jharkhand": 'temperate',
-    "Goa": 'humid', "Kerala": 'humid', "West Bengal": 'humid', "Odisha": 'humid', "Assam": 'humid', "Meghalaya": 'humid', "Tripura": 'humid',
-    "Mizoram": 'humid', "Manipur": 'humid', "Nagaland": 'humid', "Andaman and Nicobar Islands": 'humid', "Lakshadweep": 'humid', "Puducherry": 'humid',
-    "Jammu and Kashmir": 'cold', "Ladakh": 'cold', "Himachal Pradesh": 'cold', "Uttarakhand": 'cold',
-    "Arunachal Pradesh": 'cold', "Sikkim": 'cold',
-};
-
-
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<{ temp: MetricData | null; humidity: MetricData | null; light: MetricData | null }>({ temp: null, humidity: null, light: null });
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [cropData, setCropData] = useState<CropData[]>([]);
   const [alertData, setAlertData] = useState<AlertData[]>([]);
+  const [baseMetrics, setBaseMetrics] = useState<{temp: number, humidity: number} | null>(null);
+  const [climateInfo, setClimateInfo] = useState<{ description: string } | null>(null);
+  const [location, setLocation] = useState<{ city: string; state: string } | null>(null);
 
+  // Effect to get location and fetch climate data from AI
   useEffect(() => {
-    const fetchData = () => {
-      let baseTemp = 24.5; // Default temperate
-      let baseHumidity = 65; // Default
-      
+    const initializeDashboard = async () => {
+      let city = "Bengaluru";
+      let state = "Karnataka";
+
       const storedAddress = localStorage.getItem('farm_address');
       if (storedAddress) {
-          const address = JSON.parse(storedAddress);
-          if (address.state) {
-              const zone = climateZones[address.state as keyof typeof climateZones] || 'temperate';
-            
-              switch(zone) {
-                case 'hot':
-                  baseTemp = 29;
-                  baseHumidity = 55;
-                  break;
-                case 'cold':
-                  baseTemp = 18;
-                  baseHumidity = 60;
-                  break;
-                case 'humid':
-                  baseTemp = 27;
-                  baseHumidity = 75;
-                  break;
-                case 'temperate':
-                default:
-                  baseTemp = 24.5;
-                  baseHumidity = 65;
-                  break;
-              }
-          }
+        const address = JSON.parse(storedAddress);
+        if (address.city && address.state) {
+            city = address.city;
+            state = address.state;
+        }
       }
+      setLocation({ city, state });
 
+      // Call new AI action to get climate data
+      const climateResponse = await getCityClimate({ city, state });
+      if (climateResponse.data) {
+          setBaseMetrics({
+              temp: climateResponse.data.averageTemp,
+              humidity: climateResponse.data.averageHumidity
+          });
+          setClimateInfo({ description: climateResponse.data.climateDescription });
+      } else {
+          // Fallback to defaults if AI fails
+          console.error("Could not fetch climate data:", climateResponse.error);
+          setBaseMetrics({ temp: 24.5, humidity: 65 });
+          setClimateInfo({ description: "Default temperate climate." });
+      }
+    };
+    initializeDashboard();
+  }, []);
+
+  // Effect to generate and update simulated data based on baseMetrics
+  useEffect(() => {
+    if (!baseMetrics) return;
+
+    const fetchData = () => {
+      const { temp: baseTemp, humidity: baseHumidity } = baseMetrics;
+      
       // Metrics
       const tempValue = baseTemp + (Math.random() - 0.5) * 2;
       const humidityValue = baseHumidity + (Math.random() * 4 - 2);
@@ -134,16 +133,14 @@ export default function DashboardPage() {
     }, 1500);
 
     // Set up a recurring update to simulate live data
-    const intervalId = setInterval(() => {
-      fetchData();
-    }, 5000); // Refresh every 5 seconds
+    const intervalId = setInterval(fetchData, 5000); // Refresh every 5 seconds
 
     // Cleanup function to clear timers when the component unmounts
     return () => {
       clearTimeout(initialLoadTimer);
       clearInterval(intervalId);
     };
-  }, []);
+  }, [baseMetrics]);
 
   if (loading) {
     return (
@@ -180,7 +177,14 @@ export default function DashboardPage() {
     >
       <motion.div variants={itemVariants}>
         <h1 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's a live overview of your vertical farm.</p>
+        {location && !loading ? (
+            <p className="text-muted-foreground flex items-center gap-2 pt-1">
+                <Info className="h-4 w-4" /> 
+                <span>Live overview for your farm in {location.city}. Climate: {climateInfo?.description}</span>
+            </p>
+        ) : (
+            <p className="text-muted-foreground">Welcome back! Here's a live overview of your vertical farm.</p>
+        )}
       </motion.div>
       
       <motion.div variants={containerVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

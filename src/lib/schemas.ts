@@ -34,3 +34,8 @@ export const CropRecommendationSchema = z.object({
     city: z.string(),
     state: z.string(),
 });
+
+export const CityClimateSchema = z.object({
+    city: z.string(),
+    state: z.string(),
+});
