@@ -47,8 +47,7 @@ export default function DashboardPage() {
   const [alertData, setAlertData] = useState<AlertData[]>([]);
 
   useEffect(() => {
-    // Simulate fetching live data
-    const timer = setTimeout(() => {
+    const fetchData = () => {
       // Metrics
       const tempValue = 24.5 + (Math.random() - 0.5);
       const humidityValue = 68 + (Math.random() * 4 - 2);
@@ -81,11 +80,24 @@ export default function DashboardPage() {
           { icon: <Thermometer className="h-4 w-4" />, title: "High Temperature", description: "Greenhouse 1 exceeded 30°C.", time: "5m ago", severity: "High" },
           { icon: <Droplets className="h-4 w-4" />, title: "Low Humidity", description: "Lettuce section humidity dropped to 45%.", time: "30m ago", severity: "Medium" },
       ]);
+    };
 
+    // Simulate initial network delay
+    const initialLoadTimer = setTimeout(() => {
+      fetchData();
       setLoading(false);
-    }, 1500); // Simulate network delay
+    }, 1500);
 
-    return () => clearTimeout(timer);
+    // Set up a recurring update to simulate live data
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 5000); // Refresh every 5 seconds
+
+    // Cleanup function to clear timers when the component unmounts
+    return () => {
+      clearTimeout(initialLoadTimer);
+      clearInterval(intervalId);
+    };
   }, []);
 
   if (loading) {
