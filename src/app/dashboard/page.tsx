@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { format, subDays } from "date-fns";
 import { MetricCard } from "@/components/metric-card";
 import { DataChart } from "@/components/data-chart";
 import { AiOptimizer } from "@/components/ai-optimizer";
@@ -103,14 +104,17 @@ export default function DashboardPage() {
         light: { value: `${lightValue.toFixed(1)} klx`, change: `${(Math.random() * 0.2).toFixed(1)} klx`, changeType: 'increase', trendData: Array.from({ length: 10 }, (_, i) => ({ x: i, y: 12 + Math.random() * 0.5 })) },
       });
 
-      // Chart Data
-      const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-      setChartData(days.map(day => ({
-        day,
-        temperature: baseTemp - 2 + Math.random() * 4,
-        humidity: baseHumidity - 5 + Math.random() * 10,
-        light: 12 + Math.random() * 1.5
-      })));
+      // Chart Data for the last 30 days
+      const today = new Date();
+      setChartData(Array.from({ length: 30 }).map((_, i) => {
+        const date = subDays(today, 29 - i);
+        return {
+          day: format(date, 'MMM d'),
+          temperature: baseTemp - 2 + Math.random() * 4,
+          humidity: baseHumidity - 5 + Math.random() * 10,
+          light: 12 + Math.random() * 1.5,
+        };
+      }));
 
       // Crop Data
       setCropData([

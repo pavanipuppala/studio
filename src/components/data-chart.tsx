@@ -48,8 +48,8 @@ export function DataChart({ data }: DataChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Weekly Overview</CardTitle>
-        <CardDescription>Key environmental metrics for the last 7 days</CardDescription>
+        <CardTitle className="font-headline">Monthly Overview</CardTitle>
+        <CardDescription>Key environmental metrics for the last 30 days</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-72 w-full">
@@ -60,7 +60,7 @@ export function DataChart({ data }: DataChartProps) {
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
-                    tickFormatter={(value) => value.slice(0, 3)}
+                    interval={4}
                 />
                  <YAxis
                     tickLine={false}
