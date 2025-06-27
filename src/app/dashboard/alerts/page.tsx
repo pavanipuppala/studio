@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -98,17 +97,8 @@ export default function AlertsPage() {
         if (cachedAlertsRaw) {
             const cachedData = JSON.parse(cachedAlertsRaw);
             setAlerts(cachedData.alerts);
-            toast({
-                title: "Using Cached Data",
-                description: "Could not fetch live alerts. Displaying the last known status.",
-            });
         } else {
-            toast({
-                title: "Failed to Generate Alerts",
-                description: "Could not fetch live alerts and no cached data is available. Please try again later.",
-                variant: "destructive",
-            });
-            setError(null); // We use a toast instead of the error state
+            setError(null);
         }
     }
     setLoading(false);

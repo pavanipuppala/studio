@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -73,16 +72,6 @@ export function AiOptimizer({ cropType, temperature, humidity, lightLevel }: AiO
       if (cachedDataRaw) {
         const cachedData = JSON.parse(cachedDataRaw);
         setResult(cachedData);
-        toast({
-          title: "Using Cached Data",
-          description: "Could not fetch new optimization advice. Displaying the last successful one.",
-        });
-      } else {
-        toast({
-          title: "Failed to get Optimization",
-          description: "Could not retrieve optimization advice. Please check your connection and try again.",
-          variant: "destructive"
-        });
       }
     }
     setIsLoading(false);

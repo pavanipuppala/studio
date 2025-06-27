@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -14,7 +13,6 @@ import { CropRecommender } from "@/components/crop-recommender";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCityClimate, getRecommendedCrop } from "@/lib/actions";
 import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
-import { useToast } from "@/hooks/use-toast";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -52,10 +50,8 @@ export default function DashboardPage() {
   const [recommendedCrop, setRecommendedCrop] = useState<RecommendCropOutput | null>(null);
   const [isRecommenderLoading, setIsRecommenderLoading] = useState(false);
   const [recommenderError, setRecommenderError] = useState<string | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
-    // On initial load, try to get data from local storage first for a faster UI response.
     const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
     if (cachedRecommendationRaw) {
       setRecommendedCrop(JSON.parse(cachedRecommendationRaw));
@@ -106,22 +102,10 @@ export default function DashboardPage() {
         if (cachedRecommendationRaw) {
             const cachedRecommendation = JSON.parse(cachedRecommendationRaw);
             setRecommendedCrop(cachedRecommendation);
-            toast({
-                title: "Using Cached Data",
-                description: "Could not fetch a new recommendation. Displaying the last successful one.",
-                variant: "default"
-            });
-        } else {
-             toast({
-                title: "Failed to get Recommendation",
-                description: "Could not fetch a new crop recommendation. Please try again later.",
-                variant: "destructive"
-            });
-            setRecommenderError(null); // Clear any previous errors
         }
     }
     setIsRecommenderLoading(false);
-  }, [farmInfo, toast]);
+  }, [farmInfo]);
 
   useEffect(() => {
     if (!baseMetrics) return;
