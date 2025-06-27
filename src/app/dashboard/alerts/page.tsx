@@ -1,158 +1,186 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { getGeneratedAlerts, getRecommendedCrop } from "@/lib/actions";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle, Filter, Loader2 } from "lucide-react";
 
-type Alert = {
-  severity: "High" | "Medium" | "Low";
-  component: string;
-  message: string;
-  timestamp: string;
-  status: "Active" | "Resolved";
-};
+import { getGeneratedAlerts, getRecommendedCrop } from "@/lib/actions";
+import { AlertCard, type Alert } from "@/components/alert-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      setLoading(true);
-      setError(null);
+  // Filter states
+  const [statusFilter, setStatusFilter] = useState('Active');
+  const [severityFilter, setSeverityFilter] = useState('All');
 
-      const storedAddress = localStorage.getItem('farm_address');
-      if (!storedAddress) {
-        setError("Farm address not set. Please set your location first.");
-        setLoading(false);
-        return;
-      }
-      const address = JSON.parse(storedAddress);
-      const { city, state } = address;
+  const fetchAlerts = useCallback(async () => {
+    setError(null);
 
-      if (!city || !state) {
-        setError("Invalid farm address in storage.");
-        setLoading(false);
-        return;
-      }
-
-      // First, get the recommended crop to make the alerts more context-aware
-      const cropResponse = await getRecommendedCrop({ city, state });
-      if (cropResponse.error || !cropResponse.data) {
-        setError(cropResponse.error || "Could not retrieve farm context.");
-        setLoading(false);
-        return;
-      }
-
-      const { cropName, predictedFarmType } = cropResponse.data;
-
-      // Now, generate alerts based on location and farm context
-      const alertsResponse = await getGeneratedAlerts({
-        city,
-        state,
-        cropName,
-        farmType: predictedFarmType,
-      });
-
-      if (alertsResponse.data) {
-        setAlerts(alertsResponse.data.alerts);
-      } else {
-        setError(alertsResponse.error || "Failed to generate alerts.");
-      }
+    const storedAddress = localStorage.getItem('farm_address');
+    if (!storedAddress) {
+      setError("Farm address not set. Please set your location first.");
       setLoading(false);
-    };
+      return;
+    }
+    const address = JSON.parse(storedAddress);
+    const { city, state } = address;
 
-    fetchAlerts();
+    if (!city || !state) {
+      setError("Invalid farm address in storage.");
+      setLoading(false);
+      return;
+    }
+
+    const cropResponse = await getRecommendedCrop({ city, state });
+    if (cropResponse.error || !cropResponse.data) {
+      setError(cropResponse.error || "Could not retrieve farm context.");
+      setLoading(false);
+      return;
+    }
+
+    const { cropName, predictedFarmType } = cropResponse.data;
+
+    const alertsResponse = await getGeneratedAlerts({ city, state, cropName, farmType: predictedFarmType });
+
+    if (alertsResponse.data) {
+      // For a "live feed" feel, we merge new active alerts with existing ones
+      setAlerts(prevAlerts => {
+        const existingIds = new Set(prevAlerts.map(a => a.id));
+        const newAlerts = alertsResponse.data.alerts.filter(a => !existingIds.has(a.id));
+        const updatedAlerts = prevAlerts.map(pa => {
+            const updatedVersion = alertsResponse.data.alerts.find(na => na.id === pa.id);
+            return updatedVersion ? { ...pa, status: updatedVersion.status } : pa;
+        });
+
+        return [...updatedAlerts, ...newAlerts].sort((a,b) => (a.status === 'Active' ? -1 : 1));
+      });
+    } else {
+      setError(alertsResponse.error || "Failed to generate alerts.");
+    }
+    setLoading(false);
   }, []);
 
+  useEffect(() => {
+    setLoading(true);
+    fetchAlerts();
+    
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchAlerts, 30000);
+    return () => clearInterval(interval);
+  }, [fetchAlerts]);
+
+  const handleResolve = (alertId: string) => {
+    setAlerts(currentAlerts =>
+      currentAlerts.map(alert =>
+        alert.id === alertId ? { ...alert, status: 'Resolved' } : alert
+      )
+    );
+  };
+
+  const filteredAlerts = useMemo(() => {
+    return alerts
+      .filter(alert => {
+        if (statusFilter !== 'All' && alert.status !== statusFilter) return false;
+        if (severityFilter !== 'All' && alert.severity !== severityFilter) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const severityOrder = { Critical: 0, Warning: 1, Info: 2 };
+        if (a.status === 'Active' && b.status !== 'Active') return -1;
+        if (a.status !== 'Active' && b.status === 'Active') return 1;
+        return severityOrder[a.severity] - severityOrder[b.severity];
+      });
+  }, [alerts, statusFilter, severityFilter]);
+
   const renderLoadingSkeleton = () => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Severity</TableHead>
-          <TableHead>Component</TableHead>
-          <TableHead>Message</TableHead>
-          <TableHead>Timestamp</TableHead>
-          <TableHead>Status</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {Array.from({ length: 6 }).map((_, index) => (
-          <TableRow key={index} className="even:bg-card/50">
-            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-            <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-            <TableCell><Skeleton className="h-6 w-full" /></TableCell>
-            <TableCell><Skeleton className="h-6 w-28" /></TableCell>
-            <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <Card key={index}><CardContent className="p-6"><Skeleton className="h-48" /></CardContent></Card>
+      ))}
+    </div>
   );
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline flex items-center gap-2">
-            <AlertTriangle className="h-8 w-8 text-destructive" />
-            Alerts
+            <AlertTriangle className="h-8 w-8 text-primary" />
+            System Alerts
         </h1>
         <p className="text-muted-foreground">
-          A log of all system alerts and notifications, generated based on your farm's context.
+          Live feed of system notifications, generated based on your farm's context.
         </p>
       </div>
+
       <Card>
-        <CardContent className="p-0">
-            {loading ? (
-              renderLoadingSkeleton()
-            ) : error ? (
-              <div className="p-6 text-center text-destructive">{error}</div>
-            ) : (
-              <Table>
-                  <TableHeader>
-                  <TableRow>
-                      <TableHead>Severity</TableHead>
-                      <TableHead>Component</TableHead>
-                      <TableHead>Message</TableHead>
-                      <TableHead>Timestamp</TableHead>
-                      <TableHead>Status</TableHead>
-                  </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                  {alerts.map((alert, index) => (
-                      <TableRow key={index} className="even:bg-card/50">
-                      <TableCell>
-                          <Badge variant={alert.severity === 'High' ? 'destructive' : alert.severity === 'Medium' ? 'secondary' : 'outline'}>
-                          {alert.severity}
-                          </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">{alert.component}</TableCell>
-                      <TableCell>{alert.message}</TableCell>
-                      <TableCell>{alert.timestamp}</TableCell>
-                      <TableCell>
-                          <Badge variant={alert.status === 'Active' ? 'default' : 'outline'} className={alert.status === 'Active' ? 'bg-amber-500' : ''}>
-                              {alert.status}
-                          </Badge>
-                      </TableCell>
-                      </TableRow>
-                  ))}
-                  </TableBody>
-              </Table>
-            )}
+        <CardContent className="p-4 flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 font-medium">
+                <Filter className="h-4 w-4" />
+                <span>Filter by:</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 flex-1">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Statuses</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Resolved">Resolved</SelectItem>
+                    </SelectContent>
+                </Select>
+                 <Select value={severityFilter} onValueChange={setSeverityFilter}>
+                    <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Severity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Severities</SelectItem>
+                        <SelectItem value="Critical">Critical</SelectItem>
+                        <SelectItem value="Warning">Warning</SelectItem>
+                        <SelectItem value="Info">Info</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
         </CardContent>
       </Card>
+      
+      {loading ? (
+        renderLoadingSkeleton()
+      ) : error ? (
+        <div className="p-6 text-center text-destructive bg-destructive/10 rounded-lg">{error}</div>
+      ) : (
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AnimatePresence>
+                {filteredAlerts.length > 0 ? (
+                    filteredAlerts.map(alert => (
+                        <motion.div
+                            key={alert.id}
+                            layout
+                            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                        >
+                            <AlertCard alert={alert} onResolve={handleResolve} />
+                        </motion.div>
+                    ))
+                ) : (
+                    <motion.div className="col-span-full text-center py-12 text-muted-foreground">
+                        <p>No alerts match the current filters.</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+      )}
     </div>
   );
 }
+
+    
