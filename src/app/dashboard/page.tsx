@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -53,20 +54,12 @@ export default function DashboardPage() {
   const [recommenderError, setRecommenderError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // On initial mount, fetch all necessary data for the dashboard
   useEffect(() => {
-    const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
-    if (cachedRecommendationRaw) {
-      const recommendation = JSON.parse(cachedRecommendationRaw);
-      setRecommendedCrop(recommendation);
-      if (recommendation.cropName && !previousCrops.includes(recommendation.cropName)) {
-        setPreviousCrops([recommendation.cropName]);
-      }
-    }
-
     const initializeDashboard = async () => {
+      // 1. Get Farm Info from localStorage
       let city = "Bengaluru";
       let state = "Karnataka";
-
       const storedAddress = localStorage.getItem('farm_address');
       if (storedAddress) {
         const address = JSON.parse(storedAddress);
@@ -75,9 +68,16 @@ export default function DashboardPage() {
             state = address.state;
         }
       }
-      setFarmInfo({ city, state });
+      const currentFarmInfo = { city, state };
+      setFarmInfo(currentFarmInfo);
 
-      const climateResponse = await getCityClimate({ city, state });
+      // 2. Fetch critical data in parallel
+      const [climateResponse, recommendationResponse] = await Promise.all([
+        getCityClimate(currentFarmInfo),
+        getRecommendedCrop(currentFarmInfo)
+      ]);
+
+      // 3. Process climate data, which will trigger the polling useEffect for live metrics
       if (climateResponse.data) {
           setBaseMetrics({
               temp: climateResponse.data.averageTemp,
@@ -85,13 +85,36 @@ export default function DashboardPage() {
           });
           setClimateInfo({ description: climateResponse.data.climateDescription });
       } else {
-          // Fallback to defaults without showing an error
+          // Fallback to defaults if climate API fails
           setBaseMetrics({ temp: 24.5, humidity: 65 });
           setClimateInfo({ description: "Default temperate climate." });
       }
+
+      // 4. Process recommendation data
+      if (recommendationResponse.data) {
+        setRecommendedCrop(recommendationResponse.data);
+        localStorage.setItem('lastValidCropRecommendation', JSON.stringify(recommendationResponse.data));
+        if (recommendationResponse.data.cropName) {
+            setPreviousCrops([recommendationResponse.data.cropName]);
+        }
+      } else {
+        // If API fails, try to load from cache as a fallback
+        const cachedRecommendationRaw = localStorage.getItem('lastValidCropRecommendation');
+        if (cachedRecommendationRaw) {
+            const cachedRecommendation = JSON.parse(cachedRecommendationRaw);
+            setRecommendedCrop(cachedRecommendation);
+            if (cachedRecommendation.cropName) {
+                setPreviousCrops([cachedRecommendation.cropName]);
+            }
+        }
+      }
+      
+      // 5. All initial data has been fetched, stop loading
+      setLoading(false);
     };
+
     initializeDashboard();
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const handleFetchRecommendation = useCallback(async () => {
     if (!farmInfo) {
@@ -126,10 +149,12 @@ export default function DashboardPage() {
     });
   }, [toast]);
 
+  // This useEffect is for polling live sensor data and updating charts.
+  // It triggers once baseMetrics are available and then polls every 5 seconds.
   useEffect(() => {
     if (!baseMetrics) return;
 
-    const fetchData = () => {
+    const pollLiveData = () => {
       const { temp: baseTemp, humidity: baseHumidity } = baseMetrics;
       
       const tempValue = baseTemp + (Math.random() - 0.5) * 2;
@@ -159,15 +184,10 @@ export default function DashboardPage() {
       ]);
     };
 
-    const initialLoadTimer = setTimeout(() => {
-      fetchData();
-      setLoading(false);
-    }, 1500);
-
-    const intervalId = setInterval(fetchData, 5000);
+    pollLiveData(); // Run once immediately when baseMetrics are available
+    const intervalId = setInterval(pollLiveData, 5000);
 
     return () => {
-      clearTimeout(initialLoadTimer);
       clearInterval(intervalId);
     };
   }, [baseMetrics]);
