@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
+import { Textarea } from "./ui/textarea";
 
 interface CropRecommenderProps {
   recommendation: RecommendCropOutput | null;
@@ -83,6 +85,15 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
                 <SelectItem value="Traditional Vertical">Traditional Vertical</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="reasoning">Reasoning</Label>
+            <Textarea
+              id="reasoning"
+              value={editedData.reason}
+              onChange={(e) => setEditedData({ ...editedData, reason: e.target.value })}
+              className="min-h-[120px]"
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" size="sm" onClick={handleCancel}>
