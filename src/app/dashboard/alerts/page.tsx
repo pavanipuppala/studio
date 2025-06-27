@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -16,7 +17,6 @@ import { useToast } from "@/hooks/use-toast";
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Filter states
@@ -24,11 +24,8 @@ export default function AlertsPage() {
   const [severityFilter, setSeverityFilter] = useState('All');
 
   const fetchAlerts = useCallback(async () => {
-    setError(null);
-
     const storedAddress = localStorage.getItem('farm_address');
     if (!storedAddress) {
-      setError("Farm address not set. Please set your location first.");
       setLoading(false);
       return;
     }
@@ -36,7 +33,6 @@ export default function AlertsPage() {
     const { city, state } = address;
 
     if (!city || !state) {
-      setError("Invalid farm address in storage.");
       setLoading(false);
       return;
     }
@@ -61,17 +57,32 @@ export default function AlertsPage() {
 
     const alertsResponse = await getGeneratedAlerts({ city, state, cropName, farmType: predictedFarmType });
 
+    let latestAlerts: Alert[] = [];
+
     if (alertsResponse.data) {
+      latestAlerts = alertsResponse.data.alerts;
       localStorage.setItem('lastValidGeneratedAlerts', JSON.stringify(alertsResponse.data));
-      setAlerts(prevAlerts => {
+    } else {
+        const cachedAlertsRaw = localStorage.getItem('lastValidGeneratedAlerts');
+        if (cachedAlertsRaw) {
+            const cachedData = JSON.parse(cachedAlertsRaw);
+            latestAlerts = cachedData.alerts;
+        }
+    }
+
+    if (latestAlerts.length > 0) {
+        // Find which alerts are new for notifications by comparing with current state
+        const currentAlertIds = new Set(alerts.map(a => a.id));
+        const newActiveAlerts = latestAlerts.filter(a => !currentAlertIds.has(a.id) && a.status === 'Active');
+        
+        // Update the state with the full new list of alerts
+        setAlerts(latestAlerts);
+
+        // Handle side-effects (notifications) separately to avoid render errors
         const savedSettingsRaw = localStorage.getItem('farmSettings');
         const settings = savedSettingsRaw ? JSON.parse(savedSettingsRaw).notifications : { email: true, highSeverity: true, mediumSeverity: false };
-
-        if (settings.email) {
-          const currentAlertIds = new Set(prevAlerts.map(a => a.id));
-          const newActiveAlerts = alertsResponse.data.alerts.filter(a => !currentAlertIds.has(a.id) && a.status === 'Active');
-
-          if (newActiveAlerts.length > 0) {
+        
+        if (settings.email && newActiveAlerts.length > 0) {
             const userProfileRaw = localStorage.getItem('userProfile');
             const userEmail = userProfileRaw ? JSON.parse(userProfileRaw).email : 'your email';
 
@@ -86,31 +97,11 @@ export default function AlertsPage() {
                 });
               }
             });
-          }
-        }
-        
-        const existingIds = new Set(prevAlerts.map(a => a.id));
-        const newAlerts = alertsResponse.data.alerts.filter(a => !existingIds.has(a.id));
-        const updatedAlerts = prevAlerts.map(pa => {
-            const updatedVersion = alertsResponse.data.alerts.find(na => na.id === pa.id);
-            return updatedVersion ? { ...pa, status: updatedVersion.status } : pa;
-        });
-
-        return [...newAlerts, ...updatedAlerts].sort((a, b) => {
-          if (a.status === 'Active' && b.status !== 'Active') return -1;
-          if (a.status !== 'Active' && b.status === 'Active') return 1;
-          return 0; // Keep original order for same-status alerts
-        });
-      });
-    } else {
-        const cachedAlertsRaw = localStorage.getItem('lastValidGeneratedAlerts');
-        if (cachedAlertsRaw) {
-            const cachedData = JSON.parse(cachedAlertsRaw);
-            setAlerts(cachedData.alerts);
         }
     }
+    
     setLoading(false);
-  }, [toast]);
+  }, [toast, alerts]);
 
   useEffect(() => {
     const initialFetch = async () => {
@@ -201,8 +192,6 @@ export default function AlertsPage() {
       
       {loading ? (
         renderLoadingSkeleton()
-      ) : error ? (
-        <div className="p-6 text-center text-destructive bg-destructive/10 rounded-lg">{error}</div>
       ) : (
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
