@@ -1,9 +1,10 @@
+
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { User, Bell, Thermometer, Clock, Activity, LogOut, Trash2 } from 'lucide-react';
+import { User, Bell, Thermometer, Clock, Activity, LogOut, Trash2, Upload } from 'lucide-react';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ export default function ProfilePage() {
   const [role, setRole] = useState("Farmer");
   const [avatar, setAvatar] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const storedProfile = localStorage.getItem('userProfile');
@@ -57,6 +59,21 @@ export default function ProfilePage() {
       setAvatar("https://placehold.co/100x100.png");
     }
   }, []);
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatar(reader.result as string);
+        toast({
+            title: "Image Preview Updated",
+            description: "Click 'Save Changes' to apply your new profile picture."
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = () => {
     const updatedProfile = { name, email, phone, location, role, avatar };
@@ -111,8 +128,28 @@ export default function ProfilePage() {
                             <AvatarFallback>{getInitials(name)}</AvatarFallback>
                         </Avatar>
                         <div className="w-full space-y-2">
-                            <Label htmlFor="avatar-url">Profile Picture URL</Label>
-                            <Input id="avatar-url" value={avatar} onChange={(e) => setAvatar(e.target.value)} disabled={!isEditing} />
+                          <Label>Profile Picture</Label>
+                          <Input
+                            id="avatar-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarChange}
+                            className="hidden"
+                            ref={fileInputRef}
+                            disabled={!isEditing}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={!isEditing}
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload Image
+                          </Button>
+                          <p className="text-xs text-muted-foreground">
+                            Choose a new profile picture from your device.
+                          </p>
                         </div>
                     </div>
                     <Separator />
