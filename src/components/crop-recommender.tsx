@@ -1,26 +1,51 @@
 "use client";
 
-import { Lightbulb, Loader2, MapPin, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Lightbulb, Loader2, MapPin, RefreshCw, Edit, Save, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
 
 interface CropRecommenderProps {
   recommendation: RecommendCropOutput | null;
+  onSaveRecommendation: (newRecommendation: RecommendCropOutput) => void;
   farmInfo: { city: string; state: string; } | null;
   isLoading: boolean;
   error: string | null;
   onFetchRecommendation: () => void;
 }
 
-export function CropRecommender({ recommendation, farmInfo, isLoading, error, onFetchRecommendation }: CropRecommenderProps) {
+export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo, isLoading, error, onFetchRecommendation }: CropRecommenderProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedData, setEditedData] = useState<RecommendCropOutput | null>(recommendation);
+
+  useEffect(() => {
+    // Sync local state with prop change, but only when not in edit mode.
+    if (!isEditing) {
+      setEditedData(recommendation);
+    }
+  }, [recommendation, isEditing]);
+
+  const handleSave = () => {
+    if (editedData) {
+      onSaveRecommendation(editedData);
+      setIsEditing(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedData(recommendation); // Reset changes to original prop value
+    setIsEditing(false);
+  };
   
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center h-40">
+        <div className="flex items-center justify-center h-48">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           <p className="ml-2 text-muted-foreground">Finding the perfect crop...</p>
         </div>
@@ -28,15 +53,61 @@ export function CropRecommender({ recommendation, farmInfo, isLoading, error, on
     }
 
     if (error) {
-        return null;
+        return null; // Don't show errors as per user request
+    }
+
+    if (isEditing && editedData) {
+      return (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="cropName">Recommended Crop</Label>
+            <Input
+              id="cropName"
+              value={editedData.cropName}
+              onChange={(e) => setEditedData({ ...editedData, cropName: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="farmType">Predicted Farm Type</Label>
+            <Select
+              value={editedData.predictedFarmType}
+              onValueChange={(value) => setEditedData({ ...editedData, predictedFarmType: value })}
+            >
+              <SelectTrigger id="farmType">
+                <SelectValue placeholder="Select farm type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Hydroponics">Hydroponics</SelectItem>
+                <SelectItem value="Aeroponics">Aeroponics</SelectItem>
+                <SelectItem value="Aquaponics">Aquaponics</SelectItem>
+                <SelectItem value="Traditional Vertical">Traditional Vertical</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={handleCancel}>
+              <X className="mr-2 h-4 w-4" /> Cancel
+            </Button>
+            <Button size="sm" onClick={handleSave}>
+              <Save className="mr-2 h-4 w-4" /> Save Changes
+            </Button>
+          </div>
+        </div>
+      );
     }
 
     if (recommendation) {
       return (
         <div className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground mb-1">Recommended Crop</p>
-            <h3 className="text-2xl font-bold text-primary">{recommendation.cropName}</h3>
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Recommended Crop</p>
+              <h3 className="text-2xl font-bold text-primary">{recommendation.cropName}</h3>
+            </div>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsEditing(true)}>
+              <Edit className="h-4 w-4" />
+              <span className="sr-only">Edit Recommendation</span>
+            </Button>
           </div>
           <div>
             <p className="text-sm text-muted-foreground mb-1">Predicted Farm Type</p>
@@ -48,7 +119,7 @@ export function CropRecommender({ recommendation, farmInfo, isLoading, error, on
             <p className="text-sm text-muted-foreground mb-1">Reasoning</p>
             <p className="text-sm">{recommendation.reason}</p>
           </div>
-           <Button onClick={onFetchRecommendation} variant="outline" size="sm" className="w-full">
+           <Button onClick={onFetchRecommendation} variant="outline" size="sm" className="w-full mt-2">
             <RefreshCw className="mr-2 h-4 w-4" />
             Get Another Suggestion
           </Button>
@@ -57,7 +128,7 @@ export function CropRecommender({ recommendation, farmInfo, isLoading, error, on
     }
 
     return (
-        <div className="text-center space-y-4 flex flex-col items-center justify-center h-40">
+        <div className="text-center space-y-4 flex flex-col items-center justify-center h-48">
             <p className="text-sm text-muted-foreground max-w-xs">
                 Click the button to get a personalized crop recommendation for your farm, powered by AI.
             </p>
@@ -82,7 +153,7 @@ export function CropRecommender({ recommendation, farmInfo, isLoading, error, on
           </CardDescription>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-[240px] flex flex-col justify-center">
         {renderContent()}
       </CardContent>
     </Card>

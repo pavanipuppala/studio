@@ -116,6 +116,15 @@ export default function DashboardPage() {
     }
     setIsRecommenderLoading(false);
   }, [farmInfo, previousCrops]);
+  
+  const handleSaveRecommendation = useCallback((newRecommendation: RecommendCropOutput) => {
+    setRecommendedCrop(newRecommendation);
+    localStorage.setItem('lastValidCropRecommendation', JSON.stringify(newRecommendation));
+    toast({
+        title: "Recommendation Updated",
+        description: "Your custom crop settings have been saved.",
+    });
+  }, [toast]);
 
   useEffect(() => {
     if (!baseMetrics) return;
@@ -231,6 +240,7 @@ export default function DashboardPage() {
               isLoading={isRecommenderLoading}
               error={recommenderError}
               onFetchRecommendation={handleFetchRecommendation}
+              onSaveRecommendation={handleSaveRecommendation}
             />
             <AlertsPreview alerts={alertData} />
         </motion.div>
