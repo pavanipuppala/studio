@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -13,6 +14,7 @@ import { CropRecommender } from "@/components/crop-recommender";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCityClimate, getRecommendedCrop } from "@/lib/actions";
 import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
+import { useToast } from "@/hooks/use-toast";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -50,6 +52,7 @@ export default function DashboardPage() {
   const [recommendedCrop, setRecommendedCrop] = useState<RecommendCropOutput | null>(null);
   const [isRecommenderLoading, setIsRecommenderLoading] = useState(false);
   const [recommenderError, setRecommenderError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const initializeDashboard = async () => {
@@ -92,11 +95,22 @@ export default function DashboardPage() {
     const response = await getRecommendedCrop(farmInfo);
     if (response.data) {
         setRecommendedCrop(response.data);
+        localStorage.setItem('lastValidRecommendation', JSON.stringify(response.data));
     } else {
-        setRecommenderError(response.error || "Failed to get recommendation.");
+        const cachedRecommendationRaw = localStorage.getItem('lastValidRecommendation');
+        if (cachedRecommendationRaw) {
+            const cachedRecommendation = JSON.parse(cachedRecommendationRaw);
+            setRecommendedCrop(cachedRecommendation);
+            toast({
+                title: "Using Cached Data",
+                description: "Could not fetch a new recommendation. Displaying the last successful one.",
+            });
+        } else {
+            setRecommenderError(response.error || "Failed to get recommendation.");
+        }
     }
     setIsRecommenderLoading(false);
-  }, [farmInfo]);
+  }, [farmInfo, toast]);
 
   useEffect(() => {
     if (!baseMetrics) return;
