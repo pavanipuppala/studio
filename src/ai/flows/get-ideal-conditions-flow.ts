@@ -10,7 +10,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const IdealConditionsInputSchema = z.object({
+const IdealConditionsInputSchema = z.object({
   cropName: z.string().describe('The name of the crop.'),
 });
 export type IdealConditionsInput = z.infer<typeof IdealConditionsInputSchema>;
