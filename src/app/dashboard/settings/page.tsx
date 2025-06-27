@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings as SettingsIcon, Bell, Palette, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -32,7 +33,15 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 
+  const [notifications, setNotifications] = useState({
+    email: true,
+    highSeverity: true,
+    mediumSeverity: false,
+  });
+
   const handleSave = () => {
+    // Here you would typically save the settings to a backend or localStorage
+    console.log("Saving settings:", notifications);
     toast({
       title: "Settings Saved",
       description: "Your preferences have been updated.",
@@ -65,21 +74,33 @@ export default function SettingsPage() {
                 <Label htmlFor="email-notifications">Email Notifications</Label>
                 <p className='text-sm text-muted-foreground'>Receive important alerts and summaries via email.</p>
               </div>
-              <Switch id="email-notifications" defaultChecked />
+              <Switch
+                id="email-notifications"
+                checked={notifications.email}
+                onCheckedChange={(checked) => setNotifications(prev => ({...prev, email: checked}))}
+              />
             </div>
             <div className="flex items-center justify-between space-x-2 p-4 rounded-lg border">
               <div className='space-y-1'>
                 <Label htmlFor="high-severity-alerts">High Severity Alerts</Label>
                  <p className='text-sm text-muted-foreground'>Critical issues requiring immediate attention.</p>
               </div>
-              <Switch id="high-severity-alerts" defaultChecked />
+              <Switch
+                id="high-severity-alerts"
+                checked={notifications.highSeverity}
+                onCheckedChange={(checked) => setNotifications(prev => ({...prev, highSeverity: checked}))}
+              />
             </div>
              <div className="flex items-center justify-between space-x-2 p-4 rounded-lg border">
               <div className='space-y-1'>
                 <Label htmlFor="medium-severity-alerts">Medium Severity Alerts</Label>
                  <p className='text-sm text-muted-foreground'>Warnings about potential issues.</p>
               </div>
-              <Switch id="medium-severity-alerts" />
+              <Switch
+                id="medium-severity-alerts"
+                checked={notifications.mediumSeverity}
+                onCheckedChange={(checked) => setNotifications(prev => ({...prev, mediumSeverity: checked}))}
+              />
             </div>
           </CardContent>
         </Card>
