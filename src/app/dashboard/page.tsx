@@ -95,9 +95,9 @@ export default function DashboardPage() {
     const response = await getRecommendedCrop(farmInfo);
     if (response.data) {
         setRecommendedCrop(response.data);
-        localStorage.setItem('lastValidRecommendation', JSON.stringify(response.data));
+        localStorage.setItem('lastValidAlert', JSON.stringify(response.data));
     } else {
-        const cachedRecommendationRaw = localStorage.getItem('lastValidRecommendation');
+        const cachedRecommendationRaw = localStorage.getItem('lastValidAlert');
         if (cachedRecommendationRaw) {
             const cachedRecommendation = JSON.parse(cachedRecommendationRaw);
             setRecommendedCrop(cachedRecommendation);
@@ -106,7 +106,7 @@ export default function DashboardPage() {
                 description: "Could not fetch a new recommendation. Displaying the last successful one.",
             });
         } else {
-            setRecommenderError(response.error || "Failed to get recommendation.");
+            setRecommenderError("System alert: Please monitor manually.");
         }
     }
     setIsRecommenderLoading(false);
