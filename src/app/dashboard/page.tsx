@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getCityClimate, getRecommendedCrop } from "@/lib/actions";
 import type { RecommendCropOutput } from "@/ai/flows/recommend-crop-flow";
 import { useToast } from "@/hooks/use-toast";
+import { FertilizerRecommender } from "@/components/fertilizer-recommender";
 
 const containerVariants = {
   hidden: { opacity: 1 },
@@ -251,6 +252,11 @@ export default function DashboardPage() {
               temperature={metrics.temp ? parseFloat(metrics.temp.value) : undefined}
               humidity={metrics.humidity ? parseFloat(metrics.humidity.value) : undefined}
               lightLevel={metrics.light ? parseFloat(metrics.light.value) * 1000 : undefined}
+            />
+            <FertilizerRecommender 
+              cropType={recommendedCrop?.cropName}
+              temperature={metrics.temp ? parseFloat(metrics.temp.value) : undefined}
+              humidity={metrics.humidity ? parseFloat(metrics.humidity.value) : undefined}
             />
         </motion.div>
         <motion.div variants={itemVariants} className="lg:col-span-1 space-y-8">

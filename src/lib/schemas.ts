@@ -1,3 +1,4 @@
+
 import { z } from "zod";
 
 export const LoginSchema = z.object({
@@ -48,4 +49,15 @@ export const GenerateAlertsInputSchema = z.object({
   state: z.string(),
   cropName: z.string(),
   farmType: z.string(),
+});
+
+export const FertilizerRecommenderSchema = z.object({
+    temperature: z.coerce.number().min(-50).max(100, "Invalid temperature"),
+    humidity: z.coerce.number().min(0).max(100, "Invalid humidity"),
+    moisture: z.coerce.number().min(0).max(100, "Invalid moisture"),
+    soilType: z.string().min(1, "Please select a soil type"),
+    cropType: z.string().min(1, "Crop type is required"),
+    nitrogen: z.coerce.number().min(0),
+    phosphorous: z.coerce.number().min(0),
+    potassium: z.coerce.number().min(0),
 });

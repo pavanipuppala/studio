@@ -1,10 +1,12 @@
+
 'use server';
 
 import { optimizeCropYield, type OptimizeCropYieldOutput } from '@/ai/flows/optimize-crop-yield';
 import { recommendCrop, type RecommendCropOutput } from '@/ai/flows/recommend-crop-flow';
 import { getCityClimate as getCityClimateFlow, type GetCityClimateOutput } from '@/ai/flows/get-city-climate-flow';
 import { generateAlerts as generateAlertsFlow, type GenerateAlertsOutput } from '@/ai/flows/generate-alerts-flow';
-import { AiOptimizerSchema, CropRecommendationSchema, CityClimateSchema, GenerateAlertsInputSchema } from './schemas';
+import { recommendFertilizer, type RecommendFertilizerOutput } from '@/ai/flows/recommend-fertilizer-flow';
+import { AiOptimizerSchema, CropRecommendationSchema, CityClimateSchema, GenerateAlertsInputSchema, FertilizerRecommenderSchema } from './schemas';
 
 export async function getAiOptimization(
     formData: unknown
@@ -83,5 +85,25 @@ export async function getGeneratedAlerts(
         console.error(e);
         const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
         return { error: `Failed to generate alerts: ${errorMessage}` };
+    }
+}
+
+export async function getFertilizerRecommendation(
+    formData: unknown
+): Promise<{ data?: RecommendFertilizerOutput; error?: string }> {
+    const validatedFields = FertilizerRecommenderSchema.safeParse(formData);
+
+    if (!validatedFields.success) {
+        console.log(validatedFields.error.flatten().fieldErrors);
+        return { error: 'Invalid input.' };
+    }
+
+    try {
+        const result = await recommendFertilizer(validatedFields.data);
+        return { data: result };
+    } catch (e) {
+        console.error(e);
+        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+        return { error: `Failed to get fertilizer recommendation: ${errorMessage}` };
     }
 }
