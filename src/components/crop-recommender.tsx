@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -51,7 +52,7 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
     setIsEditing(false);
   };
   
-  const handleCropNameBlur = async () => {
+  const handleReasoningUpdate = async () => {
     if (!editedData || !farmInfo || !editedData.cropName || isReasoningLoading) return;
 
     if (editedData.cropName === originalCropNameOnEdit.current) return;
@@ -96,14 +97,28 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="cropName">Recommended Crop</Label>
-            <Input
-              id="cropName"
-              value={editedData.cropName}
-              onChange={(e) => setEditedData({ ...editedData, cropName: e.target.value })}
-              onBlur={handleCropNameBlur}
-            />
+            <div className="flex items-center gap-2">
+                <Input
+                    id="cropName"
+                    value={editedData.cropName}
+                    onChange={(e) => setEditedData({ ...editedData, cropName: e.target.value })}
+                    onBlur={handleReasoningUpdate}
+                    disabled={isReasoningLoading}
+                />
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-9 w-9 flex-shrink-0"
+                    onClick={handleReasoningUpdate}
+                    disabled={isReasoningLoading}
+                >
+                    {isReasoningLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    <span className="sr-only">Update Reasoning</span>
+                </Button>
+            </div>
             <p className="text-xs text-muted-foreground">
-                Update the crop name and click away to get new AI-powered reasoning.
+                Change the crop and click the refresh button to get new AI-powered reasoning.
             </p>
           </div>
           <div className="space-y-2">
