@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -103,6 +102,9 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
               onChange={(e) => setEditedData({ ...editedData, cropName: e.target.value })}
               onBlur={handleCropNameBlur}
             />
+            <p className="text-xs text-muted-foreground">
+                Update the crop name and click away to get new AI-powered reasoning.
+            </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="farmType">Predicted Farm Type</Label>
