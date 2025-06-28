@@ -219,18 +219,24 @@ export function FertilizerRecommender({ cropType, temperature, humidity }: Ferti
         </Form>
         
         <div className="mt-6">
-          {result && (
-            <Alert className="border-primary/50 bg-primary/10">
-                <Bot className="h-4 w-4 text-primary" />
-                <AlertTitle className="font-headline text-primary">
-                    Fertilizer Recommendation: {result.fertilizerName}
-                </AlertTitle>
-                <AlertDescription>
-                   <p className="font-semibold mt-4 mb-2 text-foreground">Reasoning:</p>
-                   <p className="text-muted-foreground">{result.reasoning}</p>
-                </AlertDescription>
-            </Alert>
-          )}
+          <Alert className="border-primary/50 bg-primary/10 min-h-[140px] flex flex-col">
+              <Bot className="h-4 w-4 text-primary" />
+              <AlertTitle className="font-headline text-primary">
+                  {result ? `Fertilizer Recommendation: ${result.fertilizerName}`: "Fertilizer Recommendation"}
+              </AlertTitle>
+              <AlertDescription className="flex-grow flex flex-col">
+                 {result ? (
+                    <>
+                        <p className="font-semibold mt-4 mb-2 text-foreground">Reasoning:</p>
+                        <p className="text-muted-foreground">{result.reasoning}</p>
+                    </>
+                 ) : (
+                    <div className="flex items-center justify-center flex-grow">
+                        <p className="text-muted-foreground">Your AI fertilizer recommendation will appear here.</p>
+                    </div>
+                 )}
+              </AlertDescription>
+          </Alert>
         </div>
       </CardContent>
     </Card>
