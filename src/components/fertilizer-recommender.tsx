@@ -23,7 +23,6 @@ import { getFertilizerRecommendation } from "@/lib/actions";
 import type { RecommendFertilizerOutput } from "@/ai/flows/recommend-fertilizer-flow";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { useToast } from "@/hooks/use-toast";
 
 interface FertilizerRecommenderProps {
   cropType?: string;
@@ -36,7 +35,6 @@ const soilTypes = ["Sandy", "Loamy", "Black", "Red", "Clayey"];
 export function FertilizerRecommender({ cropType, temperature, humidity }: FertilizerRecommenderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<RecommendFertilizerOutput | null>(null);
-  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof FertilizerRecommenderSchema>>({
     resolver: zodResolver(FertilizerRecommenderSchema),
@@ -70,12 +68,13 @@ export function FertilizerRecommender({ cropType, temperature, humidity }: Ferti
     const response = await getFertilizerRecommendation(values);
     if (response.data) {
       setResult(response.data);
+      localStorage.setItem('lastValidFertilizerRecommendation', JSON.stringify(response.data));
     } else {
-      toast({
-        title: "Error",
-        description: response.error || "An unknown error occurred while fetching the recommendation.",
-        variant: "destructive",
-      })
+      const cachedDataRaw = localStorage.getItem('lastValidFertilizerRecommendation');
+      if (cachedDataRaw) {
+        const cachedData = JSON.parse(cachedDataRaw);
+        setResult(cachedData);
+      }
     }
     setIsLoading(false);
   }
