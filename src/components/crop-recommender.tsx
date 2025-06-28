@@ -26,17 +26,56 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState<RecommendCropOutput | null>(recommendation);
   const [isReasoningLoading, setIsReasoningLoading] = useState(false);
-  const originalCropNameOnEdit = useRef<string | null>(null);
+  const originalRecommendationOnEdit = useRef<RecommendCropOutput | null>(null);
 
+  // Debounce effect for fetching new reasoning
   useEffect(() => {
-    // Sync local state with prop change, but only when not in edit mode.
+    if (!isEditing || !editedData || !farmInfo || editedData.cropName === originalRecommendationOnEdit.current?.cropName) {
+      return;
+    }
+    
+    if (!editedData.cropName.trim()) {
+        return;
+    }
+
+    const handler = setTimeout(() => {
+      const fetchNewReasoning = async () => {
+        setIsReasoningLoading(true);
+        const response = await getRecommendedCrop({
+            ...farmInfo,
+            forceCropName: editedData.cropName,
+        });
+        
+        if (response.data) {
+            setEditedData(prev => ({
+                ...(prev!),
+                reason: response.data.reason,
+                predictedFarmType: response.data.predictedFarmType,
+            }));
+            originalRecommendationOnEdit.current = response.data;
+        } else {
+            console.error("Failed to update reasoning:", response.error);
+        }
+        
+        setIsReasoningLoading(false);
+      }
+      fetchNewReasoning();
+    }, 750);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [editedData?.cropName, farmInfo, isEditing]);
+
+  // Sync local state with prop change, but only when not in edit mode.
+  useEffect(() => {
     if (!isEditing) {
       setEditedData(recommendation);
     }
   }, [recommendation, isEditing]);
   
   const handleEdit = () => {
-    originalCropNameOnEdit.current = recommendation?.cropName || null;
+    originalRecommendationOnEdit.current = recommendation;
     setIsEditing(true);
   }
 
@@ -48,34 +87,8 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
   };
 
   const handleCancel = () => {
-    setEditedData(recommendation); // Reset changes to original prop value
+    setEditedData(recommendation);
     setIsEditing(false);
-  };
-  
-  const handleReasoningUpdate = async () => {
-    if (!editedData || !farmInfo || !editedData.cropName || isReasoningLoading) return;
-
-    if (editedData.cropName === originalCropNameOnEdit.current) return;
-
-    setIsReasoningLoading(true);
-    const response = await getRecommendedCrop({
-        ...farmInfo,
-        forceCropName: editedData.cropName,
-    });
-    
-    if (response.data) {
-        setEditedData(prev => ({
-            ...(prev!),
-            cropName: response.data.cropName, // Keep the user's entered name which is also returned
-            reason: response.data.reason,
-            predictedFarmType: response.data.predictedFarmType,
-        }));
-        originalCropNameOnEdit.current = response.data.cropName;
-    } else {
-        console.error("Failed to update reasoning:", response.error);
-    }
-    
-    setIsReasoningLoading(false);
   };
 
   const renderContent = () => {
@@ -89,7 +102,7 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
     }
 
     if (error) {
-        return null; // Don't show errors as per user request
+        return null;
     }
 
     if (isEditing && editedData) {
@@ -97,28 +110,18 @@ export function CropRecommender({ recommendation, onSaveRecommendation, farmInfo
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="cropName">Recommended Crop</Label>
-            <div className="flex items-center gap-2">
+            <div className="relative">
                 <Input
                     id="cropName"
                     value={editedData.cropName}
                     onChange={(e) => setEditedData({ ...editedData, cropName: e.target.value })}
-                    onBlur={handleReasoningUpdate}
-                    disabled={isReasoningLoading}
                 />
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-9 w-9 flex-shrink-0"
-                    onClick={handleReasoningUpdate}
-                    disabled={isReasoningLoading}
-                >
-                    {isReasoningLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                    <span className="sr-only">Update Reasoning</span>
-                </Button>
+                {isReasoningLoading && (
+                    <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
             </div>
             <p className="text-xs text-muted-foreground">
-                Change the crop and click the refresh button to get new AI-powered reasoning.
+                The reasoning will automatically update as you type.
             </p>
           </div>
           <div className="space-y-2">
